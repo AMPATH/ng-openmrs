@@ -6,7 +6,7 @@ var session = sessionStorage;
 var local = localStorage;
 var DEFAULTER_COHORT_CONTEXT  = "https://testserver1.ampath.or.ke";
 
-var dc = angular.module('defaulterCohort', ['ngResource','ngCookies','openmrsServices']);
+var dc = angular.module('defaulterCohort', ['ngResource','ngCookies','openmrsServices','spinner']);
 
 
 dc.factory('DefaulterCohort',['$http','spinnerService',
@@ -16,9 +16,9 @@ dc.factory('DefaulterCohort',['$http','spinnerService',
 
       DefaulterCohort.ping = function() {
 	  $http.get(DEFAULTER_COHORT_CONTEXT).success(function(data) {console.log(data);});
-      }
+      };
 
-      DefaulterCohort.init = function() {	  
+      DefaulterCohort.init = function() {
 	  DefaulterCohort.getOutreachProviders();
       };
 
@@ -39,10 +39,10 @@ dc.factory('DefaulterCohort',['$http','spinnerService',
 	      $http.get(DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohort?defaulter_cohort_uuid=' + uuid).success(function(data) {
 		  session.setItem(data.defaulter_cohort.uuid,JSON.stringify(data.defaulter_cohort));
 		  for(var i=0; i<data.defaulter_cohort.patients.length; i++) {
-		      var p = data.defaulter_cohort.patients[i];		      
+		      var p = data.defaulter_cohort.patients[i];
 		      session.setItem(p.uuid,JSON.stringify(p));
 		  }
-		  
+
 
 		  if(uuid != data.defaulter_cohort.uuid) {
 		      local.removeItem("defaulterCohorts");
@@ -52,7 +52,7 @@ dc.factory('DefaulterCohort',['$http','spinnerService',
 	      });
 	  }
       };
-      
+
       DefaulterCohort.getDefaulterCohorts = function(callback) {
 	  var dcs = local.getItem("defaulterCohorts");
 
@@ -62,14 +62,14 @@ dc.factory('DefaulterCohort',['$http','spinnerService',
           }
           else {
 	      console.log("getting defaulter cohorts from server");
-	      
+
               $http.get(DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohorts').success(function(data) {
-		  //alert('success getting data from dc server');		  
+		  //alert('success getting data from dc server');
                   local.setItem("defaulterCohorts",JSON.stringify(data));
 		  callback(data);
               }).error(function(error,status) {
 		  alert('error');
-		  alert(error);		  
+		  alert(error);
 		  alert(status);
 	      });
           }
@@ -82,13 +82,13 @@ dc.factory('DefaulterCohort',['$http','spinnerService',
 	      cohort = JSON.parse(session.getItem(uuid));
 	      console.log('uuid to be update: ' + uuid);
 	      var url = DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_retired_members?defaulter_cohort_uuid=' +uuid;
-	      
+
 	      $http.get(url).success(function(retiredPatients) {
 		  console.log(retiredPatients);
-		  if(retiredPatients.indexOf("*") != -1) {		      
+		  if(retiredPatients.indexOf("*") != -1) {
 		      session.removeItem(uuid);
 		      local.removeItem("defaulterCohorts");
-		      DefaulterCohort.get(uuid,callback);		      
+		      DefaulterCohort.get(uuid,callback);
 		  }
 		  else {
 		      for(var i=0; i<retiredPatients.length; i++) {
@@ -119,7 +119,7 @@ dc.factory('DefaulterCohort',['$http','spinnerService',
       };
 
 
-      DefaulterCohort.getOutreachProviders = function(callback) {	  
+      DefaulterCohort.getOutreachProviders = function(callback) {
 	  var url = DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_outreach_providers';
 	  var providers = local.getItem('outreach-providers');
 
@@ -129,7 +129,7 @@ dc.factory('DefaulterCohort',['$http','spinnerService',
 		  console.log('got outreach providers');
 		  local.setItem("outreach-providers",JSON.stringify(data));
 		  providers = data;
-		  if(callback) callback(providers);		  
+		  if(callback) callback(providers);
               }).error(function(error) { console.log(error); });
 	  }
 	  else providers = angular.fromJson(providers);
@@ -137,7 +137,7 @@ dc.factory('DefaulterCohort',['$http','spinnerService',
 
 	  if(callback) callback(providers);
 	  else return providers;
-      }
+      };
 
 
       return DefaulterCohort;

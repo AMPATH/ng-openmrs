@@ -6,7 +6,6 @@
 angular.module('patientDashboard',['openmrsServices','flex','utility.widgets'])
     .directive('encountersPane',['$state','EncounterService','OpenmrsUtilityService',
       function($state,EncounterService,OpenmrsUtilityService) {
-	  var static_dir = "app/js/patient-dashboard/";
 	  return {
 	    restrict: "E",
 	    scope: {
@@ -55,11 +54,10 @@ angular.module('patientDashboard',['openmrsServices','flex','utility.widgets'])
 		};
 
 	    },
-	    templateUrl : static_dir + "views/encountersPane.html",
+	    templateUrl : "views/patient-dashboard/encountersPane.html",
 	}
     }])
     .directive('formsPane',['FormEntryService',function(FormEntryService) {
-	var static_dir = "app/js/patient-dashboard/";
 	return {
 	    restrict: "E",
 	    scope: {patientUuid:"@",},
@@ -76,7 +74,7 @@ angular.module('patientDashboard',['openmrsServices','flex','utility.widgets'])
 		});
 		*/
 	    },
-	    templateUrl : static_dir + "views/formsPane.html",
+	    templateUrl : "views/patient-dashboard/formsPane.html",
 	}
     }])
 ;

@@ -1,18 +1,17 @@
 'use strict';
 
-/* 
-Directives 
+/*
+Directives
 Outreach form validation directives
 */
 
-var static_dir = 'js/angular-amrs/app/';
 
 angular.module('outreachForm.validators',[])
     .directive('validateDateFound', [function() {
 	return {
 	    restrict : "A",
 	    require : "ngModel",
-	    link: function(scope, element, attrs,ctrl) {				
+	    link: function(scope, element, attrs,ctrl) {
 		ctrl.$validators.test = function(oldValue,newValue) {
 		    return true;
 		}
@@ -23,11 +22,11 @@ angular.module('outreachForm.validators',[])
 	return {
 	    restrict : "A",
 	    require : "ngModel",
-	    link: function(scope, element, attrs,ctrl) {				
-		ctrl.$validators.test = function(oldValue,newValue) {		    
+	    link: function(scope, element, attrs,ctrl) {
+		ctrl.$validators.test = function(oldValue,newValue) {
 		    var errors = [];
 
-		    switch(newValue) {			
+		    switch(newValue) {
 		    case "a89335d6-1350-11df-a1f1-0026b9348838" : //Patient Dead
 			if(!scope.enc.obs || !scope.enc.obs['a89df3d6-1350-11df-a1f1-0026b9348838']) {
 			    errors.push("Needs death date");
@@ -46,7 +45,7 @@ angular.module('outreachForm.validators',[])
 		    if(errors.length > 0) {
 			scope.errors.patientStatus = {errors:errors};
 			return false;
-		    } 
+		    }
 		    else { return true; }
 		}
 	    },

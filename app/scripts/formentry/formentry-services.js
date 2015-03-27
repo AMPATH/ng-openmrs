@@ -1,6 +1,6 @@
 'use strict';
 
-var formEntry = angular.module('openmrs.formentry',['openmrsServices','flex','localStorageServices']);
+var formEntry = angular.module('openmrs.formentry',['openmrsServices','flex','localStorageServices','spinner']);
 
 formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','EncounterService','PersonAttributeService','ObsService','PatientService',
   function(Auth,local,Flex,EncounterService,PersonAttributeService,ObsService,PatientService) {
@@ -33,7 +33,7 @@ formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','Encoun
 
       var formMap = {"1eb7938a-8a2a-410c-908a-23f154bf05c0":
                      {name: 'Outreach Follow-up Form',
-		      template:'js/formentry/forms/outreach-form2.html',
+		      template:'/views/formentry/forms/outreach-form2.html',
 		      encounterType:"df5547bc-1350-11df-a1f1-0026b9348838"},
 		    };
 

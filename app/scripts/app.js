@@ -1,19 +1,19 @@
 'use strict';
 
 /* App Module */
-
+//"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --user-data-dir="C:/Chrome dev session" --disable-web-security
 var ngOpenmrsApp = angular.module('ngOpenmrsApp',
         [
           'ui.router',
           //'ui.bootstrap',
-          //'defaulterCohort',
+          'defaulterCohort',
           'openmrs.auth',
-          //'openmrs.formentry',
+          'openmrs.formentry',
            'openmrsServices',
-					 //'flex',
-					 //'patientSearch',
-					 //'patientDashboard',
-					 //'spinner',
+					 'flex',
+					 'patientSearch',
+					 'patientDashboard',
+					 'spinner'
  					]);
 
 ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
@@ -80,8 +80,8 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 
     $urlRouterProvider.otherwise("/apps");
   }])
-    .run(['$rootScope','$state',//'Auth',
-	  function ($rootScope, $state, Auth) {
+    .run(['$rootScope','$state','Auth','OpenmrsFlexSettings',
+	  function ($rootScope, $state, Auth,OpenmrsFlexSettings) {
 	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
 		  if (toState.authenticate && !Auth.isAuthenticated()){
 		      $state.transitionTo("login");
@@ -94,6 +94,6 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	      });
 
 
-	      //OpenmrsFlexSettings.init();
+	      OpenmrsFlexSettings.init();
 	      //FormEntryService.init();
 	  }]);
