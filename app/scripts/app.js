@@ -22,11 +22,11 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
       $stateProvider
 	  .state('login', {
 	      url: "/login",
-              templateUrl: 'scripts/auth/views/login.html'
+              templateUrl: 'views/auth/login.html'
 	  })
 	  .state('logout',{
 	      url: "/logout",
-	      templateUrl: 'scripts/auth/views/login.html'
+	      templateUrl: 'views/auth/login.html'
 	  })
 	  .state('apps', {
 	      url: "/apps",
@@ -35,20 +35,20 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	  })
         .state('patient-search', {
           url: '/patient-search',
-          templateUrl: '/scripts/patient-search/views/patient-search.html',
+          templateUrl: '/views/patient-search/patient-search.html',
           controller: 'PatientSearchCtrl',
           authenticate:true,
         })
         .state('patient', {
           url: '/patient/:uuid',
-          templateUrl: 'scripts/patient-dashboard/views/patient-dashboard.html',
+          templateUrl: 'views/patient-dashboard/patient-dashboard.html',
           controller: 'PatientDashboardCtrl',
           authenticate:true,
         })
 
         .state('defaulter-cohort',{
           url: "/defaulter-cohort",
-          templateUrl: 'scripts/defaulter-cohort/views/defaulter-cohort.html',
+          templateUrl: 'views/defaulter-cohort/defaulter-cohort.html',
           controller: 'DefaulterCohortCtrl',
           authenticate:true,
         })
@@ -64,7 +64,7 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
         })
         .state('encounter-forms-saved',{
           url:"/encounter-forms-saved",
-          templateUrl: 'scripts/formentry/views/encounter-forms-saved.html',
+          templateUrl: 'views/formentry/encounter-forms-saved.html',
           authenticate:true,
         })
         .state('formentry',{

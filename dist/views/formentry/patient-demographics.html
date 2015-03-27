@@ -1,0 +1,1 @@
+<table> <tr> <td>Patient:  <td>{{patient.getName()}} ({{patient.getGender()}})  <tr> <td>Identifier(s):  <td><span ng-repeat="i in patient.getIdentifiers()">{{i.display}}</span>  <tr> <td>Birthdate:  <td>{{patient.getBirthdate().substring(0,10)}}  </table>
