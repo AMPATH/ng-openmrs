@@ -103,7 +103,10 @@ openmrsServices.factory('OpenmrsSessionService', ['OpenmrsSession',
       return OpenmrsSession.get({}, function (data, status, headers) {
         console.log(data);
         //alert(angular.toJson(data,true));
+        data.online = true;
         callback(data);
+      },function(error) {
+        callback({online:false});
       });
     };
 
@@ -289,6 +292,15 @@ openmrsServices.factory('PatientService', ['$http', 'Patient',
         ;
       });
     };
+
+    PatientService.query = function(params,callback,onError) {
+      PatientRes.query(params,function(data) {
+        if (callback) callback(data);
+        else return data;
+      },
+      function(error) {onError({online:false,error:error})}
+      );
+    }
 
     return PatientService;
 

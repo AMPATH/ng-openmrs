@@ -32,6 +32,12 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
       DefaulterCohortService.getOutreachProviders();
     };
 
+    DefaulterCohortService.initUser = function (username) {
+      var tables = ["defaulter-cohort"];
+      local.reset(tables);
+    };
+
+
     DefaulterCohortService.get = function (uuid, callback) {
       spinner.show('waiting');
       if (uuid === undefined || uuid === "") {
@@ -60,6 +66,8 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
           DefaulterCohortService.getMemberData(memberUuids);
           if (callback) return callback(result);
           else return result;
+        }, function(error) {
+          callback({online:false});
         });
       }
 
@@ -152,7 +160,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
 
     DefaulterCohortService.getOutreachProviders = function (callback) {
       var url = DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_outreach_providers';
-      var providers = local.get('outreach-providers');
+      var providers = local.getAll('outreach-providers');
 
       if (providers === undefined || providers === null) {
         console.log('Getting outreach providers from server');

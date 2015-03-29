@@ -45,7 +45,11 @@ dc.controller('DefaulterCohortCtrl', ['$scope', '$http', 'Auth', 'DefaulterCohor
       console.log("Getting defaulter cohort...");
 
       DefaulterCohortService.get($scope.defaulterCohortUuid, function (data) {
-        console.log(data);
+        if(data.online === false) {
+          alert("You must be online to download this cohort.")
+          return;
+        }
+        //console.log(data);
         $scope.defaulterCohort = data;
 
         if (data.uuid != $scope.defaulterCohortUuid) {

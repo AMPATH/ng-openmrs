@@ -11,7 +11,7 @@ localStorageServices.factory('localStorage.utils', [
       var name,t;
       for(var i in tables) {
         name = tables[i];
-        console.log('creating table: ' + name)
+        //console.log('creating table: ' + name)
         t = localStorage.getItem(name);
         if (t === undefined || t === null) localStorage.setItem(name,"{}");
       }

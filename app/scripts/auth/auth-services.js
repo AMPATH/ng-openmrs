@@ -4,8 +4,8 @@
 
 var auth = angular.module('openmrs.auth', ['ngResource', 'openmrsServices']);
 
-auth.factory('Auth', ['Base64', '$http', '$location', 'OpenmrsSessionService', 'OpenmrsUserService',
-  function (Base64, $http, $location, OpenmrsSessionService, OpenmrsUserService) {
+auth.factory('Auth', ['$injector','$rootScope','Base64', '$http', '$location', 'OpenmrsSessionService', 'OpenmrsUserService',
+  function ($injector,$rootScope,Base64, $http, $location, OpenmrsSessionService, OpenmrsUserService) {
     var Auth = {}
 
     Auth.authenticated = null;
@@ -27,10 +27,10 @@ auth.factory('Auth', ['Base64', '$http', '$location', 'OpenmrsSessionService', '
     Auth.authType = null;
     Auth.setAuthType = function (authType) {
       this.authType = authType;
-    }
+    };
     Auth.getAuthType = function () {
       return this.authType;
-    }
+    };
 
 
     Auth.setCredentials = function (username, password) {
@@ -42,6 +42,16 @@ auth.factory('Auth', ['Base64', '$http', '$location', 'OpenmrsSessionService', '
       document.execCommand("ClearAuthenticationCache");
       $http.defaults.headers.common.Authorization = 'Basic ';
     };
+
+    //TO DO: Save formentry data to formentry.userdata[username].
+    //       This data also needs to be reloaded if user logs back in.
+    Auth.initUser = function(username) {
+      var services = $rootScope.servicesWithUserData;
+      for(var i in services) {
+        var service = $injector.get(services[i]);
+        service.initUser(username);
+      }
+    }
 
     Auth.hasRole = function (roleUuid, callback) {
       var username = sessionStorage.getItem('username');
@@ -122,6 +132,8 @@ auth.factory('Auth', ['Base64', '$http', '$location', 'OpenmrsSessionService', '
         return undefined;
       }
       return angular.fromJson(user);
+
+
     }
 
 
@@ -140,7 +152,7 @@ auth.factory('Auth', ['Base64', '$http', '$location', 'OpenmrsSessionService', '
 
       console.log('Auth.authenticateLocal() : authenticating locally');
       Auth.setAuthType('local');
-      var doesMatch = verifyLocalUser();
+      var doesMatch = verifyLocalUser(username,password);
       if (doesMatch) {
         console.log('Authenticated: true');
         Auth.setAuthenticated(true);
@@ -157,47 +169,46 @@ auth.factory('Auth', ['Base64', '$http', '$location', 'OpenmrsSessionService', '
     }
 
 
-    Auth.authenticateRemote = function (username, password, callback) {
+    Auth.authenticate = function (username, password, callback) {
       console.log('Auth.authenticateRemote() : authenticate on server');
       Auth.setAuthType('remote');
       Auth.setCredentials(username, password);
+
       /********************************************************/
       /*FOR TESTING PURPOSES
-      verifyLocalUser(username, password);
-      setLocalUser(username, password);
-      Auth.setAuthenticated(true);
-      Auth.setPassword(password);
-      $location.path("/apps");
-      return;
-      /********************************************************/
-
+       verifyLocalUser(username, password);
+       setLocalUser(username, password);
+       Auth.setAuthenticated(true);
+       Auth.setPassword(password);
+       $location.path("/apps");
+       return;
+       /********************************************************/
 
 
       OpenmrsSessionService.getSession(function (data) {
-        if (data.authenticated) {
-          verifyLocalUser(username, password);
-          setLocalUser(username, password);
-          Auth.setAuthenticated(true);
-          Auth.setPassword(password);
-          $location.path("/apps");
+        if(data.online) {
+          if (data.authenticated) {
+            var doesMatch = verifyLocalUser(username, password);
+            if(doesMatch === undefined || doesMatch === false) { //user does not exist or password has changed
+              Auth.initUser(username);
+            }
+            setLocalUser(username, password);
+
+            Auth.setAuthenticated(true);
+            Auth.setPassword(password);
+            $location.path("/apps");
+          }
+          else {
+            Auth.setAuthenticated(false);
+            Auth.setPassword(null);
+            callback(false);
+          }
         }
         else {
-          Auth.setAuthenticated(false);
-          Auth.setPassword(null);
-          callback(false);
+          Auth.authenticateLocal(username, password, callback);
         }
       });
     }
-
-
-    Auth.authenticate = function (username, password, callback) {
-      if (navigator.onLine) {
-        Auth.authenticateRemote(username, password, callback);
-      }
-      else {
-        Auth.authenticateLocal(username, password, callback);
-      }
-    };
 
     Auth.logout = function () {
       Auth.clearCredentials();

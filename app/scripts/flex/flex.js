@@ -7,8 +7,13 @@ flex.factory('OpenmrsFlexSettings', ['localStorage.utils',
   function (local) {
     var service = {};
     service.init = function () {
-      var tables = ['openmrs.patient', 'expiration', 'openmrs.provider', 'openmrs.location', 'openmrs.encounter', 'openmrs.formentry', 'openmrs.users'];
+      var tables = ['openmrs.patient', 'expiration', 'openmrs.provider', 'openmrs.location', 'openmrs.encounter','openmrs.users'];
       local.init(tables);
+    }
+
+    service.initUser = function(username) {
+      var tables = ['openmrs.patient','openmrs.encounter'];
+      local.reset(tables);
     }
     return service;
 
@@ -41,15 +46,21 @@ flex.factory('Flex', ['localStorage.utils',
       });
     };
 
-    function queryServer(service, searchString, keyGetter, storeOffline, encryptionPassword, callback) {
-      service.query({q: searchString}, function (items) {
-        if (storeOffline) {
-          var tableName = "openmrs." + service.getName();
-          local.setQuerySet(tableName, items, keyGetter, encryptionPassword);
-        }
-        if (callback) callback(items);
-      });
+    function queryServer(service, searchString, keyGetter, storeOffline, encryptionPassword, callback, onError) {
+      service.query({q: searchString},
+        function (items) {
+          if (storeOffline) {
+            var tableName = "openmrs." + service.getName();
+            local.setQuerySet(tableName, items, keyGetter, encryptionPassword);
+          }
+          if (callback) callback(items);
+        },
+        function(error) {
+          onError(error);
+        });
     }
+
+
 
 
     flexService.getFromServer = function (service, key, storeOffline, encryptionPassword, callback) {
@@ -74,15 +85,17 @@ flex.factory('Flex', ['localStorage.utils',
     }
 
 
+    /* This is the only method that server is searched before client*/
     flexService.query = function (service, searchString, keyGetter, storeOffline, encryptionPassword, callback) {
       var tableName = "openmrs." + service.getName();
-      if (navigator.onLine) {
-        queryServer(service, searchString, keyGetter, storeOffline, encryptionPassword, callback);
-      }
-      else {
-        var resultSet = local.query(tableName, null, searchString, encryptionPassword);
-        callback(resultSet);
-      }
+      var result = queryServer(service, searchString, keyGetter, storeOffline, encryptionPassword, callback,
+      function(error) {
+        if (error.online === false) {
+          console.log('searching locally');
+          var resultSet = local.query(tableName, null, searchString, encryptionPassword);
+          callback(resultSet);
+        }
+      });
     }
 
     flexService.getAll = function (service, keyGetter, storeOffline, encryptionPassword, callback) {
