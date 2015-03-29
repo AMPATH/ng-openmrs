@@ -5,8 +5,8 @@ var formEntry = angular.module('openmrs.formentry',['openmrsServices','flex','lo
 formEntry.factory('FormEntryService',['Auth','localStorage.utils','Flex','EncounterService','PersonAttributeService','ObsService','PatientService',
   function(Auth,local,Flex,EncounterService,PersonAttributeService,ObsService,PatientService) {
       var FormEntryService = {};
-      var pendingSubmissionTable = 'amrs.formentry.pending-submission';
-      var draftsTable = 'amrs.formentry.drafts';
+      var pendingSubmissionTable = 'openmrs.formentry.pending-submission';
+      var draftsTable = 'openmrs.formentry.drafts';
 
 
       FormEntryService.init = function() {

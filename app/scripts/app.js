@@ -80,8 +80,8 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 
     $urlRouterProvider.otherwise("/apps");
   }])
-    .run(['$rootScope','$state','Auth','OpenmrsFlexSettings',
-	  function ($rootScope, $state, Auth,OpenmrsFlexSettings) {
+    .run(['$rootScope','$state','Auth','OpenmrsFlexSettings','DefaulterCohortService',
+	  function ($rootScope, $state, Auth,OpenmrsFlexSettings,DefaulterCohortService) {
 	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
 		  if (toState.authenticate && !Auth.isAuthenticated()){
 		      $state.transitionTo("login");
@@ -94,6 +94,7 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	      });
 
 
-	      OpenmrsFlexSettings.init();
-	      //FormEntryService.init();
+      OpenmrsFlexSettings.init();
+      DefaulterCohortService.init();
+      //FormEntryService.init();
 	  }]);

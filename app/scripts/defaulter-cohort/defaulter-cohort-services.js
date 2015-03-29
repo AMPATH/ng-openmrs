@@ -19,21 +19,21 @@ dc.factory('DefaulterCohort',['$resource',
 
 dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.utils','Auth',
   function ($http, spinner, local,Auth) {
-    var DefaulterCohort = {};
+    var DefaulterCohortService = {};
 
-    DefaulterCohort.ping = function () {
+    DefaulterCohortService.ping = function () {
       $http.get(DEFAULTER_COHORT_CONTEXT).success(function (data) {
         console.log(data);
       });
     };
 
-    DefaulterCohort.init = function () {
+    DefaulterCohortService.init = function () {
       var tables = ["defaulter-cohort", "defaulter-cohorts", "outreach-providers"];
       local.init(tables);
-      DefaulterCohort.getOutreachProviders();
+      DefaulterCohortService.getOutreachProviders();
     };
 
-    DefaulterCohort.get = function (uuid, callback) {
+    DefaulterCohortService.get = function (uuid, callback) {
       spinner.show('waiting');
       if (uuid === undefined || uuid === "") {
         uuid = session.getItem("curDefaulterCohortUuid");
@@ -49,7 +49,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
         spinner.hide('waiting');
       }
       else if (uuid !== undefined && uuid !== "") {
-        DefaulterCohort.get({uuid: patientUuid}, function (data, status, headers) {
+        DefaulterCohortService.get({uuid: patientUuid}, function (data, status, headers) {
 
           //If the previous cohort was voided, remove from locally saved cohorts
           if (uuid != data.defaulter_cohort.uuid) local.remove('defaulterCohort',uuid);
@@ -63,7 +63,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
 
     };
 
-    DefaulterCohort.getMemberData = function(memberUuids) {
+    DefaulterCohortService.getMemberData = function(memberUuids) {
       var memberUuid,params,nextStartIndex,encounter,encounterUuids;
       for(var i in memberUuids) {
         memberUuid = memberUuids[i];
@@ -77,7 +77,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
       }
     }
 
-    DefaulterCohort.getDefaulterCohorts = function (callback) {
+    DefaulterCohortService.getDefaulterCohorts = function (callback) {
       var dcs = local.getAll("defaulter-cohorts");
       if (dcs) {
         console.log("getting defaulter cohorts from local");
@@ -98,7 +98,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
       }
     };
 
-    DefaulterCohort.update = function (uuid, callback) {
+    DefaulterCohortService.update = function (uuid, callback) {
       console.log("updateDefaulterCohort() : updating cohort...");
       var cohort, numUpdated = 0;
       if (navigator.onLine) {
@@ -106,7 +106,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
         $http.get(url).success(function (retiredPatients) {
           //The current cohort has been retired and needs to updated with the latest version
           if (retiredPatients.indexOf("*") != -1) {
-            DefaulterCohort.get(uuid, callback);
+            DefaulterCohortService.get(uuid, callback);
           }
           else {
             cohort = local.get('defaulter-cohort',uuid,Auth.getPassword());
@@ -127,7 +127,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
       }
     };
 
-    DefaulterCohort.getNew = function (uuid, callback) {
+    DefaulterCohortService.getNew = function (uuid, callback) {
       local.removeItem('defaulter-cohort',uuid);
       var url = DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_new_defaulter_cohort?defaulter_cohort_uuid=' + uuid;
       $http.get(url).success(function (data) {
@@ -138,7 +138,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
     };
 
 
-    DefaulterCohort.getOutreachProviders = function (callback) {
+    DefaulterCohortService.getOutreachProviders = function (callback) {
       var url = DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_outreach_providers';
       var providers = local.get('outreach-providers');
 
@@ -160,7 +160,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
     };
 
 
-    return DefaulterCohort;
+    return DefaulterCohortService;
 
   }]);
 
