@@ -152,16 +152,6 @@ openmrsServices.factory('ProviderService', ['Provider',
     return ProviderService;
   }]);
 
-openmrsServices.factory('Patient', ['$resource',
-  function ($resource) {
-    var v = "custom:(uuid,identifiers:ref,person:(uuid,gender,birthdate,dead,deathDate,preferredName:(givenName,middleName,familyName),"
-      + "attributes:(uuid,value,attributeType:ref)))";
-
-    return $resource(OPENMRS_CONTEXT_PATH + "/ws/rest/v1/patient/:uuid",
-      {uuid: '@uuid', v: v},
-      {query: {method: "GET", isArray: false}}
-    );
-  }]);
 
 
 var Patient = function (patientData) {
@@ -264,7 +254,6 @@ Patient.prototype.setAttributes = function (newAttributes) {
   }
 }
 
-
 openmrsServices.factory('Patient', ['$resource',
   function ($resource) {
     var v = "custom:(uuid,identifiers:ref,person:(uuid,gender,birthdate,dead,deathDate,preferredName:(givenName,middleName,familyName),"
@@ -276,11 +265,9 @@ openmrsServices.factory('Patient', ['$resource',
     );
   }]);
 
-
 openmrsServices.factory('PatientService', ['$http', 'Patient',
   function ($http, PatientRes) {
     var PatientService = {};
-
 
     PatientService.Patient = function (patientData) {
       return new Patient(patientData);

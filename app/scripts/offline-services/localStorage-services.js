@@ -7,16 +7,17 @@ localStorageServices.factory('localStorage.utils', [
   function () {
     var service = {};
 
-    function init(tables) {
+    service.init = function(tables) {
       var name,t;
       for(var i in tables) {
         name = tables[i];
-        t = localStorage.getItem("defaulterCohorts");
-        if (t === undefined) localStorage.setItem('defaulterCohorts',"{}");
+        console.log('creating table: ' + name)
+        t = localStorage.getItem(name);
+        if (t === undefined || t === null) localStorage.setItem(name,"{}");
       }
     }
 
-    function reset(tables) {
+    service.reset = function(tables) {
       var name,t;
       for(var i in tables) {
         name = tables[i];

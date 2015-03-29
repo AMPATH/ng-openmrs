@@ -3,8 +3,8 @@
 
 var flex = angular.module('flex', ['ngResource', 'ngCookies', 'openmrsServices', 'openmrs.auth', 'localStorageServices']);
 
-flex.factory('OpenmrsFlexSettings', [
-  function () {
+flex.factory('OpenmrsFlexSettings', ['localStorage.utils',
+  function (local) {
     var service = {};
     service.init = function () {
       var tables = ['openmrs.patient', 'expiration', 'openmrs.provider', 'openmrs.location', 'openmrs.encounter', 'openmrs.formentry', 'openmrs.users'];

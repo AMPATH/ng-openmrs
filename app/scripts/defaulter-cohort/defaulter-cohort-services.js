@@ -5,20 +5,19 @@
 var session = sessionStorage;
 var DEFAULTER_COHORT_CONTEXT = "https://testserver1.ampath.or.ke";
 
-var dc = angular.module('defaulterCohort', ['ngResource', 'ngCookies', 'openmrsServices', 'spinner','localStorageServices']);
+var dc = angular.module('defaulterCohort', ['ngResource', 'ngCookies', 'openmrsServices', 'spinner', 'localStorageServices']);
 
 
-dc.factory('DefaulterCohort',['$resource',
-  function($resource) {
+dc.factory('DefaulterCohort', ['$resource',
+  function ($resource) {
     return $resource(
-      (DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohort?defaulter_cohort_uuid=' + uuid),
-      {uuid: '@uuid'},
+      (DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohort'),
       {query: {method: "GET", isArray: false}}
     )
   }]);
 
-dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.utils','Auth',
-  function ($http, spinner, local,Auth) {
+dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.utils', 'Auth','DefaulterCohort','EncounterService','PatientService',
+  function ($http, spinner, local, Auth,DefaulterCohort,EncounterService,PatientService) {
     var DefaulterCohortService = {};
 
     DefaulterCohortService.ping = function () {
@@ -42,44 +41,52 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
         session.setItem("curDefaulterCohortUuid", uuid);
       }
 
-      var dc = local.get('defaulter-cohort',uuid);
+      var dc = local.get('defaulter-cohort', uuid,Auth.getPassword());
       //console.log('dc: ' + dc + ' uuid: ' + uuid);
       if (dc) {
         callback(dc);
         spinner.hide('waiting');
       }
       else if (uuid !== undefined && uuid !== "") {
-        DefaulterCohortService.get({uuid: patientUuid}, function (data, status, headers) {
-
+        console.log("Getting defaulter cohort from server...")
+        DefaulterCohort.get({defaulter_cohort_uuid: uuid}, function (result) {
           //If the previous cohort was voided, remove from locally saved cohorts
-          if (uuid != data.defaulter_cohort.uuid) local.remove('defaulterCohort',uuid);
-
-          local.set('defaulter-cohort',uuid,data.defaulter_cohort,Auth.getPassword());
-          if (callback) return callback(p);
-          else return p;
+          local.set('defaulter-cohort', uuid, result.defaulter_cohort, Auth.getPassword());
+          var memberUuids = [];
+          var patients = result.defaulter_cohort.patients;
+          for(var i in patients) {
+            memberUuids.push(patients[i].uuid);
+          }
+          DefaulterCohortService.getMemberData(memberUuids);
+          if (callback) return callback(result);
+          else return result;
         });
-      };
+      }
+
       spinner.hide('waiting');
 
     };
 
-    DefaulterCohortService.getMemberData = function(memberUuids) {
-      var memberUuid,params,nextStartIndex,encounter,encounterUuids;
-      for(var i in memberUuids) {
+    DefaulterCohortService.getMemberData = function (memberUuids) {
+      var memberUuid, params, nextStartIndex, encounter, encounterUuids;
+      for (var i in memberUuids) {
         memberUuid = memberUuids[i];
-        params = {startIndex:0, patient:memberUuid};
-        PatientService.get(memberUuid,function(patient) {
-          EncounterService.patientQuery(params,function(encounters) {
-            patient.encounters = encounters;
-            local.set('amrs.patient',patient.uuid,patient,Auth.getPassword())
-          });
+        params = {startIndex: 0, patient: memberUuid};
+        PatientService.get(memberUuid, function (patient) {
+          if(!patient.error) {
+            EncounterService.patientQuery(params, function (encounters) {
+              patient.encounters = encounters;
+              local.set('openmrs.patient', patient.uuid, patient, Auth.getPassword())
+            });
+          }
+          else console.log("patient not found");
         });
       }
     }
 
     DefaulterCohortService.getDefaulterCohorts = function (callback) {
       var dcs = local.getAll("defaulter-cohorts");
-      if (dcs) {
+      if (Object.keys(dcs).length != 0) {
         console.log("getting defaulter cohorts from local");
         callback(dcs);
       }
@@ -88,7 +95,12 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
 
         $http.get(DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohorts').success(function (data) {
           //alert('success getting data from dc server');
-          local.set("defaulter-cohorts", data);
+          console.log(data);
+          console.log(typeof data);
+          local.setAll("defaulter-cohorts", data, function (dc) {
+            if(dc.uuid !== "0") return dc.uuid;
+            else return dc.id;
+          });
           callback(data);
         }).error(function (error, status) {
           alert('error');
@@ -109,7 +121,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
             DefaulterCohortService.get(uuid, callback);
           }
           else {
-            cohort = local.get('defaulter-cohort',uuid,Auth.getPassword());
+            cohort = local.get('defaulter-cohort', uuid, Auth.getPassword());
             for (var i = 0; i < retiredPatients.length; i++) {
               var patientUuid = retiredPatients[i];
               if (patientUuid in cohort.patients) {
@@ -120,7 +132,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
                 }
               }
             }
-            local.setItem('defaulter-cohort',uuid,cohort,Auth.getPassword());
+            local.setItem('defaulter-cohort', uuid, cohort, Auth.getPassword());
             callback(numUpdated);
           }
         });
@@ -128,11 +140,11 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
     };
 
     DefaulterCohortService.getNew = function (uuid, callback) {
-      local.removeItem('defaulter-cohort',uuid);
+      local.removeItem('defaulter-cohort', uuid);
       var url = DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_new_defaulter_cohort?defaulter_cohort_uuid=' + uuid;
       $http.get(url).success(function (data) {
         local.set("defaulter-cohorts", data.defaulter_cohorts);
-        local.set("defaulter-cohort",data.defaulter_cohort.uuid, data.defaulter_cohort,Auth.getPassword());
+        local.set("defaulter-cohort", data.defaulter_cohort.uuid, data.defaulter_cohort, Auth.getPassword());
         callback(data.defaulter_cohort);
       });
     };
@@ -146,7 +158,9 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService','localStorage.ut
         console.log('Getting outreach providers from server');
         $http.get(url).success(function (data) {
           console.log('got outreach providers');
-          local.setItem("outreach-providers", data);
+          local.setAll("outreach-providers", data, function (p) {
+            return p.uuid;
+          });
           providers = data;
           if (callback) callback(providers);
         }).error(function (error) {
