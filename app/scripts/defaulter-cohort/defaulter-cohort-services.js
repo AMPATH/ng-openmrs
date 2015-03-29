@@ -67,7 +67,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
           if (callback) return callback(result);
           else return result;
         }, function(error) {
-          callback({online:false});
+          callback({online:false,error:error});
         });
       }
 

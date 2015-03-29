@@ -106,7 +106,7 @@ openmrsServices.factory('OpenmrsSessionService', ['OpenmrsSession',
         data.online = true;
         callback(data);
       },function(error) {
-        callback({online:false});
+        callback({online:false,error:error});
       });
     };
 
@@ -148,6 +148,8 @@ openmrsServices.factory('ProviderService', ['Provider',
     ProviderService.getAll = function (callback) {
       Provider.query().$promise.then(function (data) {
         callback(data.results);
+      },function(error) {
+        callback({online:false,error:error});
       });
     };
 
@@ -290,6 +292,8 @@ openmrsServices.factory('PatientService', ['$http', 'Patient',
           return p
         }
         ;
+      },function(error) {
+        callback({online:false,error:error});
       });
     };
 
@@ -345,8 +349,8 @@ openmrsServices.factory('ObsService', ['Obs', '$http',
       var o = new Obs({uuid: obsUuid, value: value});
       o.$save(function (data) {
         console.log(data);
-      }, function (error) {
-        console.log(error);
+      },function(error) {
+        callback({online:false,error:error});
       });
     };
 
@@ -371,16 +375,18 @@ openmrsServices.factory('ObsService', ['Obs', '$http',
       var o = new Obs({uuid: obsUuid, groupMembers: groupMembers});
       o.$save(function (data) {
         console.log(data);
-      }, function (error) {
-        console.log(error);
+      },function(error) {
+        callback({online:false,error:error});
       });
-    }
+    };
 
     ObsService.get = function (obsUuid, callback) {
       var o = Obs.get({uuid: obsUuid}, function (data) {
         callback(data);
+      },function(error) {
+        callback({online:false,error:error});
       });
-    }
+    };
 
     ObsService.addObs = function (obsUuid, o, callback) {
       var url = OPENMRS_CONTEXT_PATH + '/ws/rest/v1/obs/' + obsUuid;
@@ -445,14 +451,12 @@ openmrsServices.factory('EncounterService', ['$http', 'Encounter',
     };
 
     EncounterService.get = function (encounterUuid, callback) {
-      Encounter.get({uuid: encounterUuid}, function (data, status, headers) {
-        if (callback) {
-          return callback(data);
-        }
-        else {
-          return data
-        }
-        ;
+      Encounter.get({uuid: encounterUuid},
+        function (data, status, headers) {
+          if (callback) return callback(data);
+        else return data;
+      },function(error) {
+        callback({online:false,error:error});
       });
     };
 
@@ -467,9 +471,10 @@ openmrsServices.factory('EncounterService', ['$http', 'Encounter',
           return callback(data);
         }
         else {
-          return data
+          return data;
         }
-        ;
+      },function(error) {
+        callback({online:false,error:error});
       })
     };
 
@@ -484,6 +489,8 @@ openmrsServices.factory('EncounterService', ['$http', 'Encounter',
           return data
         }
 
+      },function(error) {
+        callback({online:false,error:error});
       });
     };
 
@@ -544,6 +551,8 @@ openmrsServices.factory('LocationService', ['$http', 'Location',
     LocationService.getAll = function (callback) {
       Location.get().$promise.then(function (data) {
         callback(data.results);
+      },function(error) {
+        callback({online:false,error:error});
       });
     };
 
@@ -623,35 +632,35 @@ openmrsServices.factory('OpenmrsUserService', ['OpenmrsUser',
         else {
           return data.roles;
         }
+      },function(error) {
+        callback({online:false,error:error});
       });
     }
 
     //role can be either role uuid or name
     OpenmrsUserService.hasRole = function (username, role, callback) {
-      OpenmrsUser.get({username: username}).$promise.then(function (data) {
-        var hasRole = false;
-        var roles = data.results[0].roles;
-        if (roles) {
-          for (var i in roles) {
-            if (roles[i].uuid === role || roles[i].name.toLowerCase() === role.toLowerCase()) {
-              hasRole = true;
-              break;
+      OpenmrsUser.get({username: username},
+        function (data) {
+          var hasRole = false;
+          var roles = data.results[0].roles;
+          if (roles) {
+            for (var i in roles) {
+              if (roles[i].uuid === role || roles[i].name.toLowerCase() === role.toLowerCase()) {
+                hasRole = true;
+                break;
+              }
             }
           }
-        }
-        if (callback) {
-          callback(hasRole);
-        }
-        else {
-          return hasRole;
-        }
-      });
-    }
+          if (callback) {
+            callback(hasRole);
+          }
+          else {
+            return hasRole;
+          }
+        },function(error) {
+          callback({online:false,error:error});
+        });
+    };
 
     return OpenmrsUserService;
   }]);
-
-
-
-
-
