@@ -162,7 +162,7 @@ auth.factory('Auth', ['Base64', '$http', '$location', 'OpenmrsSessionService', '
       Auth.setAuthType('remote');
       Auth.setCredentials(username, password);
       /********************************************************/
-      /*FOR TESTING PURPOSES*/
+      /*FOR TESTING PURPOSES
       verifyLocalUser(username, password);
       setLocalUser(username, password);
       Auth.setAuthenticated(true);
