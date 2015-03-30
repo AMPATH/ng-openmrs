@@ -116,7 +116,7 @@ flex.factory('Flex', ['localStorage.utils',
 
     /*
      Save : only store locally, do not communicate with server.
-     For example, if data collection is incomplete, and form to completed later.
+     For example, if data collection is incomplete, and form to be completed later.
      */
     flexService.save = function (service, key, item, encryptionPassword, callback) {
       var tableName = "openmrs." + service.getName();

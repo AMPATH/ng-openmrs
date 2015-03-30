@@ -405,9 +405,9 @@ module.exports = function (grunt) {
           cache: [
           ],
           network: ['http://*', 'https://*'],
-          fallback: ['/ /offline.html'],
-          exclude: ['js/jquery.min.js'],
-          preferOnline: true,
+          fallback: ['/ /404.html'],
+          exclude: [],
+          preferOnline: false,
           verbose: true,
           timestamp: true,
           hash: true,
