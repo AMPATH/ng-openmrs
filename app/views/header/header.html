@@ -8,6 +8,7 @@
           Online: {{online}}
           <div ng-show="online == 'False'">
             Reconnecting in {{countdown}} seconds.
+            <a ng-click="checkOnlineStatus()">Reconnect now...</a>
           </div>
         </div>
     </div>

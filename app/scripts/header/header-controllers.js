@@ -20,4 +20,8 @@ auth.controller('HeaderCtrl',['$scope','$rootScope','$interval','NetworkManagerS
         if(newVal) $scope.countdown = newVal;
       });
 
+    $scope.checkOnlineStatus = function() {
+      NetworkManagerService.checkOnlineStatus();
+    }
+
   }]);
