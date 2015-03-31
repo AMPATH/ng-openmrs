@@ -1,5 +1,5 @@
 <!doctype html>
-<!--html class="no-js"  manifest="./manifest.appcache"-->
+<html class="no-js"  manifest="./manifest.appcache">
 <html class="no-js">
   <head>
     <meta charset="utf-8">
@@ -19,7 +19,7 @@
 
   </head>
   <body ng-app="ngOpenmrsApp">
-    <div ng-include="'views/header.html'"></div>
+    <div ng-include="'views/header/header.html'"></div>
     <div class="view-container">
       <div ui-view class="view-frame">
       </div>
@@ -56,6 +56,7 @@
 
         <!-- build:js({.tmp,app}) scripts/scripts.js -->
         <script src="scripts/app.js"></script>
+    <script src="scripts/network-manager/network-manager-services.js"> </script>
         <script src="scripts/formentry/formentry-services.js"></script>
         <script src="scripts/auth/auth-services.js"></script>
         <script src="scripts/auth/auth-controllers.js"></script>
@@ -77,6 +78,10 @@
 
         <script src="scripts/spinner/spinner.js"></script>
         <script src="scripts/spinner/spinner-directives.js"></script>
+
+
+    <script src="scripts/header/header-controllers.js"> </script>
+
         <!-- endbuild -->
 </body>
 </html>

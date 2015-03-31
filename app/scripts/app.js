@@ -13,7 +13,9 @@ var ngOpenmrsApp = angular.module('ngOpenmrsApp',
 					 'flex',
 					 'patientSearch',
 					 'patientDashboard',
-					 'spinner'
+					 'spinner',
+          'header',
+          'network-manager'
  					]);
 
 ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
@@ -35,7 +37,7 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 	  })
         .state('patient-search', {
           url: '/patient-search',
-          templateUrl: '/views/patient-search/patient-search.html',
+          templateUrl: 'views/patient-search/patient-search.html',
           controller: 'PatientSearchCtrl',
           authenticate:true,
         })
@@ -80,8 +82,8 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 
     $urlRouterProvider.otherwise("/apps");
   }])
-    .run(['$rootScope','$state','Auth','OpenmrsFlexSettings','DefaulterCohortService','FormEntryService',
-	  function ($rootScope, $state, Auth,OpenmrsFlexSettings,DefaulterCohortService,FormEntryService) {
+    .run(['$rootScope','$state','Auth','OpenmrsFlexSettings','DefaulterCohortService','FormEntryService','NetworkManagerService',
+	  function ($rootScope, $state, Auth,OpenmrsFlexSettings,DefaulterCohortService,FormEntryService,NetworkManagerService) {
 	      $rootScope.$on("$stateChangeStart", function(event, toState, toParams, fromState, fromParams){
 		  if (toState.authenticate && !Auth.isAuthenticated()){
 		      $state.transitionTo("login");
@@ -93,7 +95,9 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider','$httpProvider',
 
 	      });
 
+      //console.log(checkIfOnline);
       $rootScope.servicesWithUserData = ['OpenmrsFlexSettings','FormEntryService','DefaulterCohortService'];
+      NetworkManagerService.init();
       OpenmrsFlexSettings.init();
       DefaulterCohortService.init();
       FormEntryService.init();

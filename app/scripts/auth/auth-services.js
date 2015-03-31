@@ -6,23 +6,23 @@ var auth = angular.module('openmrs.auth', ['ngResource', 'openmrsServices']);
 
 auth.factory('Auth', ['$injector','$rootScope','Base64', '$http', '$location', 'OpenmrsSessionService', 'OpenmrsUserService',
   function ($injector,$rootScope,Base64, $http, $location, OpenmrsSessionService, OpenmrsUserService) {
-    var Auth = {}
+    var Auth = {};
 
     Auth.authenticated = null;
     Auth.setAuthenticated = function (authenticated) {
       this.authenticated = authenticated;
-    }
+    };
     //Auth.isAuthenticated = function() { return true; }
     Auth.isAuthenticated = function () {
       return this.authenticated;
-    }
+    };
 
     Auth.setPassword = function (password) {
       this.curPassword = password;
-    }
+    };
     Auth.getPassword = function () {
       return this.curPassword;
-    }
+    };
 
     Auth.authType = null;
     Auth.setAuthType = function (authType) {
@@ -51,7 +51,7 @@ auth.factory('Auth', ['$injector','$rootScope','Base64', '$http', '$location', '
         var service = $injector.get(services[i]);
         service.initUser(username);
       }
-    }
+    };
 
     Auth.hasRole = function (roleUuid, callback) {
       var username = sessionStorage.getItem('username');
@@ -166,11 +166,10 @@ auth.factory('Auth', ['$injector','$rootScope','Base64', '$http', '$location', '
         Auth.setPassword(null);
         callback(false);
       }
-    }
+    };
 
 
     Auth.authenticate = function (username, password, callback) {
-      console.log('Auth.authenticateRemote() : authenticate on server');
       Auth.setAuthType('remote');
       Auth.setCredentials(username, password);
 
@@ -184,30 +183,35 @@ auth.factory('Auth', ['$injector','$rootScope','Base64', '$http', '$location', '
        return;
        /********************************************************/
 
+      if ($rootScope.online === true) {
+        console.log('Auth.authenticateRemote() : authenticate on server');
+        OpenmrsSessionService.getSession(function (data) {
+          if (data.online) {
+            if (data.authenticated) {
+              var doesMatch = verifyLocalUser(username, password);
+              if (doesMatch === undefined || doesMatch === false) { //user does not exist or password has changed
+                Auth.initUser(username);
+              }
+              setLocalUser(username, password);
 
-      OpenmrsSessionService.getSession(function (data) {
-        if(data.online) {
-          if (data.authenticated) {
-            var doesMatch = verifyLocalUser(username, password);
-            if(doesMatch === undefined || doesMatch === false) { //user does not exist or password has changed
-              Auth.initUser(username);
+              Auth.setAuthenticated(true);
+              Auth.setPassword(password);
+              $location.path("/apps");
             }
-            setLocalUser(username, password);
-
-            Auth.setAuthenticated(true);
-            Auth.setPassword(password);
-            $location.path("/apps");
+            else {
+              Auth.setAuthenticated(false);
+              Auth.setPassword(null);
+              callback(false);
+            }
           }
           else {
-            Auth.setAuthenticated(false);
-            Auth.setPassword(null);
-            callback(false);
+            Auth.authenticateLocal(username, password, callback);
           }
-        }
-        else {
-          Auth.authenticateLocal(username, password, callback);
-        }
-      });
+        });
+      }
+      else {
+        Auth.authenticateLocal(username, password, callback);
+      }
     }
 
     Auth.logout = function () {
@@ -215,13 +219,12 @@ auth.factory('Auth', ['$injector','$rootScope','Base64', '$http', '$location', '
       OpenmrsSessionService.logout();
       Auth.setPassword(null);
       Auth.setAuthenticated(false);
-    }
+    };
 
     return Auth;
   }]);
 
-
-auth.factory('Base64', function () {
+    auth.factory('Base64', function () {
   var keyStr = 'ABCDEFGHIJKLMNOP' +
     'QRSTUVWXYZabcdef' +
     'ghijklmnopqrstuv' +
@@ -304,4 +307,4 @@ auth.factory('Base64', function () {
       return output;
     }
   };
-});
+});;

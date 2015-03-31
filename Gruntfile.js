@@ -404,8 +404,8 @@ module.exports = function (grunt) {
           basePath: '<%= yeoman.dist %>',
           cache: [
           ],
-          network: ['http://*', 'https://*'],
-          fallback: ['/ /404.html'],
+          network: ['*'],
+          fallback: ['/ 404.html'],
           exclude: [],
           preferOnline: false,
           verbose: true,

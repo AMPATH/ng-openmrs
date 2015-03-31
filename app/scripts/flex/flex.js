@@ -20,8 +20,8 @@ flex.factory('OpenmrsFlexSettings', ['localStorage.utils',
   }]);
 
 
-flex.factory('Flex', ['localStorage.utils',
-  function (local) {
+flex.factory('Flex', ['localStorage.utils','$rootScope',
+  function (local,$rootScope) {
     var flexService = {};
 
     function getFromServer(service, key, storeOffline, encryptionPassword, callback) {
@@ -88,14 +88,21 @@ flex.factory('Flex', ['localStorage.utils',
     /* This is the only method that server is searched before client*/
     flexService.query = function (service, searchString, keyGetter, storeOffline, encryptionPassword, callback) {
       var tableName = "openmrs." + service.getName();
-      var result = queryServer(service, searchString, keyGetter, storeOffline, encryptionPassword, callback,
-      function(error) {
-        if (error.online === false) {
-          console.log('searching locally');
-          var resultSet = local.query(tableName, null, searchString, encryptionPassword);
-          callback(resultSet);
-        }
-      });
+      if($rootScope.online === true) {
+        var result = queryServer(service, searchString, keyGetter, storeOffline, encryptionPassword, callback,
+          function(error) {
+            if (error.online === false) {
+              console.log('searching locally');
+              var resultSet = local.query(tableName, null, searchString, encryptionPassword);
+              callback(resultSet);
+            }
+          });
+      }
+      else {
+        console.log("querying locally...");
+        var resultSet = local.query(tableName, null, searchString, encryptionPassword);
+        callback(resultSet);
+      }
     }
 
     flexService.getAll = function (service, keyGetter, storeOffline, encryptionPassword, callback) {
