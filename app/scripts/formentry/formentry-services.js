@@ -46,7 +46,7 @@ formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'En
     var formMap = {
       "1eb7938a-8a2a-410c-908a-23f154bf05c0": {
         name: 'Outreach Follow-up Form',
-        template: '/views/formentry/forms/outreach-form2.html',
+        template: 'views/formentry/forms/outreach-form2.html',
         encounterType: "df5547bc-1350-11df-a1f1-0026b9348838"
       },
     };

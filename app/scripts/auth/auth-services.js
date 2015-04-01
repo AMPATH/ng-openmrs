@@ -169,20 +169,11 @@ auth.factory('Auth', ['$injector','$rootScope','Base64', '$http', '$location', '
     };
 
 
+
+
     Auth.authenticate = function (username, password, callback) {
       Auth.setAuthType('remote');
       Auth.setCredentials(username, password);
-
-      /********************************************************/
-      /*FOR TESTING PURPOSES
-       verifyLocalUser(username, password);
-       setLocalUser(username, password);
-       Auth.setAuthenticated(true);
-       Auth.setPassword(password);
-       $location.path("/apps");
-       return;
-       /********************************************************/
-
       if ($rootScope.online === true) {
         console.log('Auth.authenticateRemote() : authenticate on server');
         OpenmrsSessionService.getSession(function (data) {
@@ -213,6 +204,22 @@ auth.factory('Auth', ['$injector','$rootScope','Base64', '$http', '$location', '
         Auth.authenticateLocal(username, password, callback);
       }
     }
+
+
+    Auth.authenticateOpenmrsContext = function(callback) {
+      console.log('Authenticating new openmrs context');
+      OpenmrsSessionService.getSession(function (data) {
+        if (data.online) {
+          if (data.authenticated) {
+            callback(true);
+          }
+          else {
+            callback(false);
+          }
+        }
+      })
+    }
+
 
     Auth.logout = function () {
       Auth.clearCredentials();

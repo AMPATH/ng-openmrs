@@ -10,9 +10,20 @@ mod.factory('NetworkManagerService', ['$rootScope','$interval','$timeout',
     var networkMgr = {};
     var appCache = window.applicationCache;
     var timer;
-    var defaultInterval = 300;
+    var defaultInterval = 60;
 
     networkMgr.init = function() {
+
+      //My experience is that navigator.onLine is good at knowing offline. Not good at knowing online.
+      //We can use these events to trigger a more reliable method: checking the appcache.
+      $( window ).bind(
+        "online offline",
+        function( event ){
+          console.log("network status change");
+          networkMgr.checkOnlineStatus();
+        }
+      );
+
       $(appCache).bind(
         "error",
         function (event) {

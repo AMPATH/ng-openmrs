@@ -2,9 +2,9 @@
  * Created by Jonathan on 3/31/2015.
  */
 
-var header = angular.module('header', ['network-manager']);
+var layout = angular.module('layout', ['network-manager']);
 
-auth.controller('HeaderCtrl',['$scope','$rootScope','$interval','NetworkManagerService',
+layout.controller('HeaderCtrl',['$scope','$rootScope','$interval','NetworkManagerService',
   function($scope,$rootScope,$interval,NetworkManagerService) {
 
     $scope.$watch(
@@ -25,3 +25,23 @@ auth.controller('HeaderCtrl',['$scope','$rootScope','$interval','NetworkManagerS
     }
 
   }]);
+
+layout.controller('FooterCtrl',['$scope','OpenmrsSettings',
+  function($scope,OpenmrsSettings) {
+
+    $scope.openmrsContext = OpenmrsSettings.getContext();
+    $scope.openmrsContextOptions = OpenmrsSettings.getContextOptions();
+
+    $scope.setOpenmrsContext = function(url) {
+      OpenmrsSettings.setContext(url);
+    }
+
+    $scope.$watch('openmrsContext',function(newUrl) {
+      $scope.setOpenmrsContext(newUrl);
+    })
+
+
+
+  }]);
+
+

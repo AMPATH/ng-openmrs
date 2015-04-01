@@ -124,34 +124,28 @@ openmrsServices.config(['$httpProvider', function ($httpProvider) {
 
 
 openmrsServices.factory('OpenmrsSession', ['$resource','OpenmrsSettings',
-  function($resource,OpenmrsSettings) {
-    return $resource(OpenmrsSettings.getContext() + "ws/rest/v1/session");
+  function ($resource,OpenmrsSettings) {
+    var url = OpenmrsSettings.getContext() + "/ws/rest/v1/session";
+    return $resource(url);
   }]);
 
-openmrsServices.factory('OpenmrsSessionService', ['$resource','OpenmrsSettings',
-  function ($resource,OpenmrsSettings) {
-    var service = {};
-    var OpenmrsSession;
-    var url;
 
-    function getResource() {
-      return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/session");
-    }
+openmrsServices.factory('OpenmrsSessionService', ['$resource','OpenmrsSession',
+  function ($resource,OpenmrsSession) {
+    var service = {};
 
     service.getSession = function (callback) {
-      OpenmrsSession = getResource();
-
-      return OpenmrsSession.get({},function (data, status, headers) {
+      return OpenmrsSession.get(url).success(function (data, status, headers) {
         console.log(data);
+        //alert(angular.toJson(data,true));
         data.online = true;
         callback(data);
-      },function(error) {
+      }).error(function(error) {
         callback({online:false,error:error});
       });
     };
 
     service.logout = function (callback) {
-      OpenmrsSession = $resource(url);
       return OpenmrsSession.delete({}, function (data, status, headers) {
       });
     }
@@ -159,58 +153,39 @@ openmrsServices.factory('OpenmrsSessionService', ['$resource','OpenmrsSettings',
   }]);
 
 
-openmrsServices.factory('PersonService', ['$resource','OpenmrsSettings',
+openmrsServices.factory('Person', ['$resource','OpenmrsSettings',
   function ($resource,OpenmrsSettings) {
-    var service = {};
-    var url,Person;
-    function getResource() {
-      return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/person/:uuid",
-        {uuid: '@uuid'},
-        {query: {method: "GET", isArray: false}}
-      )}
-
-    service.get = function(uuid,callback) {
-      Person = getResource();
-      Person.get(uuid,
-        function(data) { callback(data);},
-        function(error) {callback(error); }
-      );
-    }
+    return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/person/:uuid",
+      {uuid: '@uuid'},
+      {query: {method: "GET", isArray: false}}
+    );
   }]);
 
 
 openmrsServices.factory('Provider', ['$resource','OpenmrsSettings',
   function ($resource,OpenmrsSettings) {
+    var v = "custom:(uuid,identifier,person:ref)";
+    return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/provider/:uuid",
+      {uuid: '@uuid', v: v},
+      {query: {method: "GET", isArray: false}}
+    );
   }]);
 
 
-openmrsServices.factory('ProviderService', ['OpenmrsSettings',
-  function (OpenmrsSettings) {
+openmrsServices.factory('ProviderService', ['Provider',
+  function (Provider) {
     var ProviderService = {};
-    var Provider;
-    var v = "custom:(uuid,identifier,person:ref)";
-
-
-    function getResource() {
-      return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/provider/:uuid",
-        {uuid: '@uuid', v: v},
-        {query: {method: "GET", isArray: false}}
-      );
-    }
 
     ProviderService.getName = function () {
       return 'provider';
     };
 
     ProviderService.getAll = function (callback) {
-      Provider = getResource();
-      Provider.query(
-        function (data) {
-          callback(data.results);
-        },
-        function(error) {
-          callback({online:false,error:error});
-        });
+      Provider.query().$promise.then(function (data) {
+        callback(data.results);
+      },function(error) {
+        callback({online:false,error:error});
+      });
     };
 
 
@@ -319,25 +294,20 @@ Patient.prototype.setAttributes = function (newAttributes) {
   }
 }
 
-openmrsServices.factory('Patient', [
-  function() {
-    return "";
+openmrsServices.factory('Patient', ['$resource','OpenmrsSettings',
+  function ($resource,OpenmrsSettings) {
+    var v = "custom:(uuid,identifiers:ref,person:(uuid,gender,birthdate,dead,deathDate,preferredName:(givenName,middleName,familyName),"
+      + "attributes:(uuid,value,attributeType:ref)))";
+
+    return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/patient/:uuid",
+      {uuid: '@uuid', v: v},
+      {query: {method: "GET", isArray: false}}
+    );
   }]);
 
-
-openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings',
-  function ($resource,$http, OpenmrsSettings) {
+openmrsServices.factory('PatientService', ['$http', 'Patient',
+  function ($http, PatientRes) {
     var PatientService = {};
-    var PatientRes;
-
-    function getResource(){
-      var v = "custom:(uuid,identifiers:ref,person:(uuid,gender,birthdate,dead,deathDate,preferredName:(givenName,middleName,familyName),"
-        + "attributes:(uuid,value,attributeType:ref)))";
-      return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/patient/:uuid",
-        {uuid: '@uuid', v: v},
-        {query: {method: "GET", isArray: false}}
-      );
-    }
 
     PatientService.Patient = function (patientData) {
       return new Patient(patientData);
@@ -347,21 +317,22 @@ openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings
       return 'patient';
     }
 
-
     PatientService.get = function (patientUuid, callback) {
-      PatientRes = getResource();
-      PatientRes.get({uuid: patientUuid},
-        function (data, status, headers) {
-          var p = new Patient(data);
-          if (callback) return callback(p);
-          else return p;
-        },function(error) { callback({online:false,error:error}); }
-      );
+      PatientRes.get({uuid: patientUuid}, function (data, status, headers) {
+        var p = new Patient(data);
+        if (callback) {
+          return callback(p);
+        }
+        else {
+          return p
+        }
+        ;
+      },function(error) {
+        callback({online:false,error:error});
+      });
     };
 
     PatientService.query = function(params,callback,onError) {
-      PatientRes = getResource();
-
       PatientRes.query(params,function(data) {
           if (callback) callback(data);
           else return data;
@@ -375,27 +346,13 @@ openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings
   }]);
 
 
-openmrsServices.factory('FormService', ['$resource','OpenmrsSettings',
+openmrsServices.factory('Form', ['$resource','OpenmrsSettings',
   function ($resource,OpenmrsSettings) {
-
-    var service = {};
-    var FormResource;
-
-    function getResource() {
-      var v = "custom:(uuid,name,encounterType:(uuid,name))";
-      return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/form/:uuid",
-        {uuid: '@uuid', v: v},
-        {query: {method: "GET", isArray: false}}
-      );
-    }
-
-    service.get = function(uuid,callback) {
-      FormResource = getResource(url);
-      FormResource.get({uuid:uuid},
-        function(data) { callback(data);},
-        function(error) { callback(error);}
-      )
-    }
+    var v = "custom:(uuid,name,encounterType:(uuid,name))";
+    return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/form/:uuid",
+      {uuid: '@uuid', v: v},
+      {query: {method: "GET", isArray: false}}
+    );
   }]);
 
 /*
@@ -408,30 +365,28 @@ openmrsServices.factory('FormService', ['$resource','OpenmrsSettings',
  }]);
  */
 
+openmrsServices.factory('Obs', ['$resource','OpenmrsSettings',
+  function ($resource,OpenmrsSettings) {
+    var v = "custom:(uuid,concept:(uuid,uuid),groupMembers,value:ref)";
+    return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/obs/:uuid",
+      {uuid: '@uuid', v: v},
+      {query: {method: "GET", isArray: false}}
+    );
+  }]);
 
-openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings',
-  function ($resource, $http,OpenmrsSettings) {
+
+openmrsServices.factory('ObsService', ['Obs', '$http',
+  function (Obs, $http) {
     var ObsService = {};
-    var url,Obs;
-
-    function getResource() {
-      var v = "custom:(uuid,concept:(uuid,uuid),groupMembers,value:ref)";
-      var url = OpenmrsSettings.getContext() + 'ws/rest/v1/obs';
-      return $resource(url,
-        {uuid: '@uuid', v: v},
-        {query: {method: "GET", isArray: false}}
-      );
-    }
 
 
     ObsService.update = function (obsUuid, value, callback) {
-
-      //var o = new Obs({uuid: obsUuid, value: value});
-      Obs = getResource(url);
-      Obs.$save({uuid: obsUuid, value: value},
-        function (data) {console.log(data);},
-        function(error) {callback({online:false,error:error});}
-      );
+      var o = new Obs({uuid: obsUuid, value: value});
+      o.$save(function (data) {
+        console.log(data);
+      },function(error) {
+        callback({online:false,error:error});
+      });
     };
 
     /*
@@ -443,28 +398,29 @@ openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings',
       for (var i in obsToUpdate) {
         o = obsToUpdate[i];
         console.log('updating obs: ' + angular.toJson(o));
+
         if (o.value !== undefined && o.value !== "") {
           ObsService.update(o.uuid, o.value, callback);
         }
         else ObsService.void(o.uuid, callback);
       }
-    };
+    }
 
     ObsService.updateGroupMembers = function (obsUuid, groupMembers, callback) {
-      //var o = new Obs({uuid: obsUuid, groupMembers: groupMembers});
-
-      Obs = getResource(url);
-      Obs.$save(function (data) {console.log(data);},
-        function(error) {callback({online:false,error:error});}
-      )
+      var o = new Obs({uuid: obsUuid, groupMembers: groupMembers});
+      o.$save(function (data) {
+        console.log(data);
+      },function(error) {
+        callback({online:false,error:error});
+      });
     };
 
     ObsService.get = function (obsUuid, callback) {
-      Obs = getResource();
-      Obs.get({uuid: obsUuid},
-        function (data) {callback(data);},
-        function(error) {callback({online:false,error:error});}
-      );
+      var o = Obs.get({uuid: obsUuid}, function (data) {
+        callback(data);
+      },function(error) {
+        callback({online:false,error:error});
+      });
     };
 
     ObsService.addObs = function (obsUuid, o, callback) {
@@ -488,12 +444,14 @@ openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings',
 
 
     ObsService.void = function (obsUuid, callback) {
-      Obs = getResource();
-      Obs.delete({uuid: obsUuid},
-        function (data) {
-          if (callback) { callback(data); }
-          else return data;
-        });
+      Obs.delete({uuid: obsUuid}).$promise.then(function (data) {
+        if (callback) {
+          callback(data);
+        }
+        else {
+          return data;
+        }
+      });
     }
 
     ObsService.voidObs = function (obsToVoid, callback) {
@@ -519,28 +477,15 @@ openmrsServices.factory('Encounter', ['$resource','OpenmrsSettings',
   }]);
 
 
-openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettings',
-  function ($http, $resource,OpenmrsSettings) {
-    var EncounterService = {}, Encounter;
-
-    function getResource() {
-      var v = "custom:(uuid,encounterDatetime,patient:(uuid,uuid),form:(uuid,name),location:ref";
-      v += ",encounterType:ref,provider:ref,obs:(uuid,concept:(uuid,uuid),value:ref,groupMembers))";
-
-      return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/encounter/:uuid",
-        {uuid: '@uuid', v: v},
-        {query: {method: "GET", isArray: false}}
-      );
-
-
-    }
+openmrsServices.factory('EncounterService', ['$http', 'Encounter',
+  function ($http, Encounter) {
+    var EncounterService = {};
 
     EncounterService.getName = function () {
       return "encounter";
     };
 
     EncounterService.get = function (encounterUuid, callback) {
-      Encounter = getResource();
       Encounter.get({uuid: encounterUuid},
         function (data, status, headers) {
           if (callback) return callback(data);
@@ -554,9 +499,8 @@ openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettin
     EncounterService.patientQuery = function (params, callback) {
       var v = "custom:(uuid,encounterDatetime,patient:(uuid,uuid),form:(uuid,name),location:ref";
       v += ",encounterType:ref,provider:ref)";
-      params.v = v;
-      Encounter = getResource();
 
+      params.v = v;
       Encounter.get(params).$promise.then(function (data) {
         if (callback) {
           return callback(data);
@@ -572,17 +516,22 @@ openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettin
     //May be better to have one function patientQuery where calling function specifies as
     //a parameter if obs should be included
     EncounterService.patientQueryWithObs = function (params, callback) {
-      Encounter.get(params,
-        function (data) {
-          if (callback) { return callback(data);}
-          else return data;
-        },
-        function(error) { callback({online:false,error:error}); }
-      );
+      Encounter.get(params).$promise.then(function (data) {
+        if (callback) {
+          return callback(data);
+        }
+        else {
+          return data
+        }
+
+      },function(error) {
+        callback({online:false,error:error});
+      });
     };
 
 
     EncounterService.submit = function (enc, callback) {
+
       var url = OpenmrsSettings.getContext() + '/ws/rest/v1/encounter/';
       if (enc.uuid) {
         url += enc.uuid;
@@ -628,25 +577,18 @@ openmrsServices.factory('Location', ['$resource','OpenmrsSettings',
 
 openmrsServices.factory('LocationService', ['$http', 'Location',
   function ($http, Location) {
-    var LocationService = {},Location;
-
-    function getResource() {
-      return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/location/:uuid",
-        {uuid: '@uuid'},
-        {query: {method: "GET", isArray: false}}
-      );
-    }
+    var LocationService = {};
 
     LocationService.getName = function () {
       return "location"
     };
 
     LocationService.getAll = function (callback) {
-      Location = getResource();
-      Location.get({},
-        function (data) { callback(data.results); },
-        function(error) {callback({online:false,error:error});}
-      );
+      Location.get().$promise.then(function (data) {
+        callback(data.results);
+      },function(error) {
+        callback({online:false,error:error});
+      });
     };
 
     return LocationService;
@@ -673,30 +615,27 @@ openmrsServices.factory('PersonAttribute', ['$resource','OpenmrsSettings',
   }]);
 
 
-openmrsServices.factory('PersonAttributeService', ['$resource','$http',
-  function ($resource, $http) {
-    var paService = {}, PersonAttribute;
+openmrsServices.factory('PersonAttributeService', ['PersonAttribute', '$http',
+  function (PersonAttribute, $http) {
+    var paService = {};
 
-    function getResource() {
-      return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/person/:personUuid/attribute/:uuid", {},
-        {
-          query: {method: "GET", isArray: false},
-        }
-      );
 
-    }
     paService.get = function (personUuid, attributeTypeUuid) {
 
 
     };
 
     paService.save = function (personUuid, attributeTypeUuid, value, callback) {
-      //var pa = new PersonAttribute({attributeType: attributeTypeUuid, value: value});
-      PersonAttribute = getResource();
-      PersonAttribute.$save({personUuid: personUuid},
+      var pa = new PersonAttribute({attributeType: attributeTypeUuid, value: value});
+      pa.$save({personUuid: personUuid},
         function (data, status, headers) {
-          if (callback) return callback(data);
-          else return data;
+          if (callback) {
+            return callback(data);
+          }
+          else {
+            return data
+          }
+          ;
         }
       );
     };
@@ -716,32 +655,25 @@ openmrsServices.factory('OpenmrsUser', ['$resource','OpenmrsSettings',
   }]);
 
 
-openmrsServices.factory('OpenmrsUserService', ['$resource','OpenmrsSettings',
-  function ($resource,OpenmrsSettings) {
-    var OpenmrsUserService = {},OpenmrsUser;
-
-    function getResource() {
-      var v = "custom:(uuid,username,systemId,roles:(uuid,name,privileges))";
-      return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/user/:uuid",
-        {uuid: '@uuid', v: v},
-        {query: {method: "GET", isArray: false}}
-      );
-
-    }
+openmrsServices.factory('OpenmrsUserService', ['OpenmrsUser',
+  function (OpenmrsUser) {
+    var OpenmrsUserService = {};
 
     OpenmrsUserService.getRoles = function (username, callback) {
-      OpenmrsUser = getResource();
-      OpenmrsUser.get({username: username},
-        function (data) {
-          if (callback) callback(data.results[0].roles);
-          else return data.roles;},
-        function(error) {callback({online:false,error:error});}
-      );
+      OpenmrsUser.get({username: username}).$promise.then(function (data) {
+        if (callback) {
+          callback(data.results[0].roles);
+        }
+        else {
+          return data.roles;
+        }
+      },function(error) {
+        callback({online:false,error:error});
+      });
     }
 
     //role can be either role uuid or name
     OpenmrsUserService.hasRole = function (username, role, callback) {
-      OpenmrsUser = getResource();
       OpenmrsUser.get({username: username},
         function (data) {
           var hasRole = false;

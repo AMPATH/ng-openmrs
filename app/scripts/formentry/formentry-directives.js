@@ -109,7 +109,7 @@ formEntry
       scope: {
         model: '=',
         label: '@',
-        name: '@',
+        name: '@'
       },
       controller: function ($scope, ProviderService, Flex) {
         Flex.getAll(ProviderService,
@@ -123,11 +123,11 @@ formEntry
           }
         );
       },
-      templateUrl: "views/formentry/providersDropdown.html",
+      templateUrl: "views/formentry/providersDropdown.html"
     }
   }])
 
-  .directive('outreachProvidersDropdown', ['DefaulterCohort', function (DefaulterCohort) {
+  .directive('outreachProvidersDropdown', ['DefaulterCohortService', function (DefaulterCohortService) {
     return {
       restrict: "E",
       scope: {
@@ -136,7 +136,7 @@ formEntry
         name: '@',
       },
       controller: function ($scope, ProviderService, Flex) {
-        DefaulterCohort.getOutreachProviders(function (data) {
+        DefaulterCohortService.getOutreachProviders(function (data) {
           //console.log(data);
           $scope.outreachProviders = data;
         });

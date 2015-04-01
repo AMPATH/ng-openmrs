@@ -162,7 +162,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
       var url = DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_outreach_providers';
       var providers = local.getAll('outreach-providers');
 
-      if (providers === undefined || providers === null) {
+      if (providers === undefined || providers === null || Object.keys(providers).length == 0) {
         console.log('Getting outreach providers from server');
         $http.get(url).success(function (data) {
           console.log('got outreach providers');
