@@ -3,15 +3,18 @@
 
 var flex = angular.module('flex', ['ngResource', 'ngCookies', 'openmrsServices', 'openmrs.auth', 'localStorageServices','network-manager']);
 
-flex.factory('OpenmrsFlexSettings', ['localStorage.utils',
-  function (local) {
+flex.factory('OpenmrsFlexSettings', ['localStorage.utils','FormEntryService',
+  function (local,FormEntryService) {
     var service = {};
     service.init = function () {
-      var tables = ['openmrs.patient', 'expiration', 'openmrs.provider', 'openmrs.location', 'openmrs.encounter','openmrs.users'];
+      var tables = ['openmrs.patient', 'expiration', 'openmrs.provider', 'openmrs.location', 'openmrs.encounter','openmrs.users','openmrs.settings'];
       local.init(tables);
+      FormEntryService.init();
     }
 
-    service.initUser = function(username) {
+    service.changeUser = function(prevUsername, curUsername) {
+      FormEntryService.changeUser(prevUsername,curUsername);
+
       var tables = ['openmrs.patient','openmrs.encounter'];
       local.reset(tables);
     }
@@ -20,8 +23,8 @@ flex.factory('OpenmrsFlexSettings', ['localStorage.utils',
   }]);
 
 
-flex.factory('Flex', ['localStorage.utils','$rootScope','NetworkManagerService',
-  function (local,$rootScope,NetworkManagerService) {
+flex.factory('Flex', ['localStorage.utils','NetworkManagerService',
+  function (local,NetworkManagerService) {
     var flexService = {};
 
     function getFromServer(service, key, storeOffline, encryptionPassword, callback) {
@@ -88,7 +91,7 @@ flex.factory('Flex', ['localStorage.utils','$rootScope','NetworkManagerService',
     /* This is the only method that server is searched before client*/
     flexService.query = function (service, searchString, keyGetter, storeOffline, encryptionPassword, callback) {
       var tableName = "openmrs." + service.getName();
-      if($rootScope.online === true) {
+      if(NetworkManagerService.isOnline() === true) {
         var result = queryServer(service, searchString, keyGetter, storeOffline, encryptionPassword, callback,
           function(error) {
             if (error.online === false) {

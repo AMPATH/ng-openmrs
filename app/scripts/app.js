@@ -95,10 +95,8 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 
       });
 
-      //console.log(checkIfOnline);
-      $rootScope.servicesWithUserData = ['OpenmrsFlexSettings', 'FormEntryService', 'DefaulterCohortService'];
+      $rootScope.servicesWithUserData = ['OpenmrsFlexSettings', 'DefaulterCohortService'];
       NetworkManagerService.init();
       OpenmrsFlexSettings.init();
       DefaulterCohortService.init();
-      FormEntryService.init();
     }]);

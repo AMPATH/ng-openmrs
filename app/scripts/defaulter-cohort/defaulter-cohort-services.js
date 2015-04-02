@@ -32,7 +32,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
       DefaulterCohortService.getOutreachProviders();
     };
 
-    DefaulterCohortService.initUser = function (username) {
+    DefaulterCohortService.changeUser = function (prevUsername,curUsername) {
       var tables = ["defaulter-cohort"];
       local.reset(tables);
     };

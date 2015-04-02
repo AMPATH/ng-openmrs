@@ -13,21 +13,38 @@ formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'En
       local.init(tables);
     };
 
-    FormEntryService.initUser = function (username) {
-      //First store existing user data
-      var savedUserData = {
-        "openmrs.formentry.pending-submission": local.getAll(pendingSubmissionTable, Auth.getPassword()),
-        "openmrs.formentry.drafts":local.getAll(draftsTable,Auth.getPassword())
-      };
-      local.set('openmrs.formentry.saved-user-data',username,savedUserData,Auth.getPassword());
 
-      //Then get any saved data and load it
+    FormEntryService.saveUserData = function(username) {
+      var pending = local.getAll(pendingSubmissionTable);
+      var drafts = local.getAll(draftsTable);
+
+      if(pending.length === 0 && drafts.length === 0) return;
+
+      var savedUserData = {};
+      if (pending.length > 0) savedUserData["openmrs.formentry.pending-submission"] = pending;
+      if (drafts.length > 0) savedUserData["openmrs.formentry.drafts"] = drafts;
+      local.set('openmrs.formentry.saved-user-data', username, savedUserData);
+
+    }
+
+    FormEntryService.loadUserData = function(username) {
       var userData = local.get('openmrs.formentry.saved-user-data',username,Auth.getPassword());
-      local.setAll('openmrs.formentry.pending-submission',userData['openmrs.formentry.pending-submission'],
-        function(form) { return form.savedFormId; },Auth.getPassword());
-      local.setAll('openmrs.formentry.drafts',userData['openmrs.formentry.drafts'],
-        function(form) { return form.savedFormId; },Auth.getPassword());
-      local.remove('openmrs.formentry.saved-user-data',username);
+      if(userData) {
+        local.setAll('openmrs.formentry.pending-submission', userData['openmrs.formentry.pending-submission'],
+          function (form) {
+            return form.savedFormId;
+          }, Auth.getPassword());
+        local.setAll('openmrs.formentry.drafts', userData['openmrs.formentry.drafts'],
+          function (form) {
+            return form.savedFormId;
+          }, Auth.getPassword());
+        local.remove('openmrs.formentry.saved-user-data', username);
+      }
+    }
+
+    FormEntryService.changeUser = function (prevUser,curUser) {
+      FormEntryService.saveUserData(prevUser);
+      FormEntryService.loadUserData(curUser);
     }
 
 

@@ -2,191 +2,160 @@
 
 /* Services */
 
-var auth = angular.module('openmrs.auth', ['ngResource', 'openmrsServices']);
+var auth = angular.module('openmrs.auth', ['ngResource', 'openmrsServices', 'localStorageServices']);
 
-auth.factory('Auth', ['$injector','$rootScope','Base64', '$http', '$location', 'OpenmrsSessionService', 'OpenmrsUserService',
-  function ($injector,$rootScope,Base64, $http, $location, OpenmrsSessionService, OpenmrsUserService) {
-    var Auth = {};
+auth.factory('Auth',
+  ['$injector',
+    '$rootScope',
+    'Base64',
+    '$http',
+    '$location',
+    'OpenmrsSessionService',
+    'OpenmrsUserService',
+    'NetworkManagerService',
+    'localStorage.utils',
+    function ($injector, $rootScope, Base64, $http, $location, OpenmrsSessionService, OpenmrsUserService, NetworkManagerService,local) {
+      var Auth = {};
 
-    Auth.authenticated = null;
-    Auth.setAuthenticated = function (authenticated) {
-      this.authenticated = authenticated;
-    };
-    //Auth.isAuthenticated = function() { return true; }
-    Auth.isAuthenticated = function () {
-      return this.authenticated;
-    };
+      Auth.authenticated = null;
+      Auth.setAuthenticated = function (authenticated) {
+        this.authenticated = authenticated;
+      };
+      //Auth.isAuthenticated = function() { return true; }
+      Auth.isAuthenticated = function () {
+        return this.authenticated;
+      };
 
-    Auth.setPassword = function (password) {
-      this.curPassword = password;
-    };
-    Auth.getPassword = function () {
-      return this.curPassword;
-    };
-
-    Auth.authType = null;
-    Auth.setAuthType = function (authType) {
-      this.authType = authType;
-    };
-    Auth.getAuthType = function () {
-      return this.authType;
-    };
-
-
-    Auth.setCredentials = function (username, password) {
-      var encoded = Base64.encode(username + ':' + password);
-      $http.defaults.headers.common.Authorization = 'Basic ' + encoded;
-    };
-
-    Auth.clearCredentials = function () {
-      document.execCommand("ClearAuthenticationCache");
-      $http.defaults.headers.common.Authorization = 'Basic ';
-    };
-
-    //TO DO: Save formentry data to formentry.userdata[username].
-    //       This data also needs to be reloaded if user logs back in.
-    Auth.initUser = function(username) {
-      var services = $rootScope.servicesWithUserData;
-      for(var i in services) {
-        var service = $injector.get(services[i]);
-        service.initUser(username);
+      Auth.setUsername = function (username) {
+        Auth.username = username;
       }
-    };
 
-    Auth.hasRole = function (roleUuid, callback) {
-      var username = sessionStorage.getItem('username');
-      OpenmrsUserService.hasRole(username, roleUuid, function (data) {
-        if (callback) {
-          callback(data);
+      Auth.getUsername = function () {
+        return Auth.username;
+      }
+
+      Auth.setPassword = function (password) {
+        this.curPassword = password;
+      };
+      Auth.getPassword = function () {
+        return this.curPassword;
+      };
+
+      Auth.authType = null;
+      Auth.setAuthType = function (authType) {
+        this.authType = authType;
+      };
+      Auth.getAuthType = function () {
+        return this.authType;
+      };
+
+
+      Auth.setCredentials = function (username, password) {
+        var encoded = Base64.encode(username + ':' + password);
+        $http.defaults.headers.common.Authorization = 'Basic ' + encoded;
+      };
+
+      Auth.clearCredentials = function () {
+        document.execCommand("ClearAuthenticationCache");
+        $http.defaults.headers.common.Authorization = 'Basic ';
+      };
+
+      Auth.hasRole = function (roleUuid, callback) {
+        var username = sessionStorage.getItem('username');
+        OpenmrsUserService.hasRole(username, roleUuid, function (data) {
+          if (callback) {
+            callback(data);
+          }
+        });
+      };
+
+
+      Auth.getRoles = function (callback) {
+        var username = sessionStorage.getItem('username');
+        console.log("getting roles for " + username);
+        OpenmrsUserService.getRoles(username, function (data) {
+          if (callback) {
+            callback(data);
+          }
+        });
+      };
+
+      function setSalt() {
+        var salt = CryptoJS.lib.WordArray.random(128 / 8);
+        localStorage.setItem('openmrs.auth.salt', salt);
+        return salt;
+      }
+
+
+      function getSalt() {
+        var salt = localStorage.getItem('openmrs.auth.salt');
+
+        //if there's no salt yet in this localStorage, set it
+        if (salt === null) {
+          salt = setSalt();
         }
-      });
-    };
+        return salt;
+      }
 
+      function setIv() {
+        var iv = CryptoJS.lib.WordArray.random(128 / 8);
+        localStorage.setItem('openmrs.auth.iv', iv);
+        return iv;
+      }
 
-    Auth.getRoles = function (callback) {
-      var username = sessionStorage.getItem('username');
-      console.log("getting roles for " + username);
-      OpenmrsUserService.getRoles(username, function (data) {
-        if (callback) {
-          callback(data);
+      function getIv() {
+        var iv = localStorage.getItem('openmrs.auth.iv');
+        if (iv === null) {
+          iv = setIv();
         }
-      });
-    };
-
-    function setSalt() {
-      var salt = CryptoJS.lib.WordArray.random(128 / 8);
-      localStorage.setItem('openmrs.auth.salt', salt);
-      return salt;
-    }
-
-
-    function getSalt() {
-      var salt = localStorage.getItem('openmrs.auth.salt');
-
-      //if there's no salt yet in this localStorage, set it
-      if (salt === null) {
-        salt = setSalt();
+        return iv;
       }
-      return salt;
-    }
 
-    function setIv() {
-      var iv = CryptoJS.lib.WordArray.random(128 / 8);
-      localStorage.setItem('openmrs.auth.iv', iv);
-      return iv;
-    }
 
-    function getIv() {
-      var iv = localStorage.getItem('openmrs.auth.iv');
-      if (iv === null) {
-        iv = setIv();
+      function getHash(password) {
+        var salt = getSalt();
+        var key128Bits100Iterations = CryptoJS.PBKDF2(password, salt, {keySize: 128 / 32, iterations: 100});
+        return key128Bits100Iterations;
       }
-      return iv;
-    }
 
 
-    function getHash(password) {
-      var salt = getSalt();
-      var key128Bits100Iterations = CryptoJS.PBKDF2(password, salt, {keySize: 128 / 32, iterations: 100});
-      return key128Bits100Iterations;
-    }
-
-
-    function verifyLocalUser(username, password) {
-      var user = getLocalUser(username);
-      if (user) {
-        var trialHash = getHash(password).toString();
-        return (trialHash === user.password);
+      function verifyLocalUser(username, password) {
+        var user = getLocalUser(username);
+        if (user) {
+          var trialHash = getHash(password).toString();
+          return (trialHash === user.password);
+        }
+        else {
+          return undefined;
+        }
       }
-      else {
-        return undefined;
+
+
+      function getLocalUser(username) {
+        return local.get('openmrs.users', username);
       }
-    }
 
 
-    function getLocalUser(username) {
-      var users = angular.fromJson(localStorage.getItem('openmrs.users'));
-      var user = users[username];
-
-      if (user === undefined) {
-        return undefined;
+      function setLocalUser(username, password) {
+        var passwordHash = getHash(password).toString();
+        var user = {username: username, password: passwordHash};
+        local.set('openmrs.users', username, user);
       }
-      return angular.fromJson(user);
-
-
-    }
-
-
-    function setLocalUser(username, password) {
-      var passwordHash = getHash(password).toString();
-      var users = angular.fromJson(localStorage.getItem('openmrs.users'));
-      if (users === null) {
-        users = {};
-      }
-      users[username] = angular.toJson({username: username, password: passwordHash.toString()});
-      localStorage.setItem('openmrs.users', angular.toJson(users));
-    }
-
-
-    Auth.authenticateLocal = function (username, password, callback) {
-
-      console.log('Auth.authenticateLocal() : authenticating locally');
-      Auth.setAuthType('local');
-      var doesMatch = verifyLocalUser(username,password);
-      if (doesMatch) {
-        console.log('Authenticated: true');
-        Auth.setAuthenticated(true);
-        Auth.setPassword(password);
-        Auth.clearCredentials();
-        $location.path("/apps");
-      }
-      else {
-        console.log('Local password does not match');
-        Auth.setAuthenticated(false);
-        Auth.setPassword(null);
-        callback(false);
-      }
-    };
 
 
 
-
-    Auth.authenticate = function (username, password, callback) {
-      Auth.setAuthType('remote');
-      Auth.setCredentials(username, password);
-      if ($rootScope.online === true) {
-        console.log('Auth.authenticateRemote() : authenticate on server');
-        OpenmrsSessionService.getSession(function (data) {
-          if (data.online) {
-            if (data.authenticated) {
-              var doesMatch = verifyLocalUser(username, password);
-              if (doesMatch === undefined || doesMatch === false) { //user does not exist or password has changed
-                Auth.initUser(username);
-              }
-              setLocalUser(username, password);
-
+      Auth.authenticate = function (username, password, callback) {
+        Auth.setCredentials(username, password);
+        if (NetworkManagerService.isOnline() === true) {
+          console.log('Auth.authenticateRemote() : authenticate on server');
+          OpenmrsSessionService.getSession(function (data) {
+            if (data.error) Auth.authenticateLocal(username, password, callback);
+            else if (data.authenticated) {
+              Auth.setAuthType('remote');
               Auth.setAuthenticated(true);
+              Auth.setUsername(username);
               Auth.setPassword(password);
+              Auth.changeUser(username,password);
               $location.path("/apps");
             }
             else {
@@ -194,44 +163,77 @@ auth.factory('Auth', ['$injector','$rootScope','Base64', '$http', '$location', '
               Auth.setPassword(null);
               callback(false);
             }
-          }
-          else {
-            Auth.authenticateLocal(username, password, callback);
-          }
-        });
-      }
-      else {
-        Auth.authenticateLocal(username, password, callback);
-      }
-    }
-
-
-    Auth.authenticateOpenmrsContext = function(callback) {
-      console.log('Authenticating new openmrs context');
-      OpenmrsSessionService.getSession(function (data) {
-        if (data.online) {
-          if (data.authenticated) {
-            callback(true);
-          }
-          else {
-            callback(false);
-          }
+          });
         }
-      })
-    }
+        else {
+          Auth.authenticateLocal(username, password, callback);
+        }
+      }
+
+      Auth.authenticateLocal = function (username, password, callback) {
+
+        console.log('Auth.authenticateLocal() : authenticating locally');
+        Auth.setAuthType('local');
+        var doesMatch = verifyLocalUser(username, password);
+        console.log('Locally Authenticated: ' + doesMatch);
+        if (doesMatch) {
+          Auth.setAuthenticated(true);
+          Auth.setUsername(username);
+          Auth.setPassword(password);
+          Auth.changeUser(username);
+          Auth.clearCredentials();
+          $location.path("/apps");
+        }
+        else {
+          Auth.setAuthenticated(false);
+          Auth.setPassword(null);
+          callback(false);
+        }
+      };
 
 
-    Auth.logout = function () {
-      Auth.clearCredentials();
-      OpenmrsSessionService.logout();
-      Auth.setPassword(null);
-      Auth.setAuthenticated(false);
-    };
+      Auth.changeUser = function (curUsername,password) {
+        console.log(curUsername);
+        var prevUsername = local.get('openmrs.settings', 'prevUsername');
+        var doesMatch = verifyLocalUser(username, password);
+        if (doesMatch === undefined || doesMatch === false || prevUsername != curUsername) { //user does not exist or password has changed
+          setLocalUser(curUsername, password);
+          var services = $rootScope.servicesWithUserData, service;
+          for (var i in services) {
+            service = $injector.get(services[i]);
+            service.changeUser(prevUsername, curUsername);
+          }
+          local.set('openmrs.settings', 'prevUsername', curUsername);
+        }
 
-    return Auth;
-  }]);
+      }
 
-    auth.factory('Base64', function () {
+      Auth.authenticateOpenmrsContext = function (callback) {
+        if(Auth.getUsername() === undefined) return;
+        console.log('Authenticating new openmrs context');
+        OpenmrsSessionService.getSession(function (data) {
+          if (data.online) {
+            if (data.authenticated) {
+              callback(true);
+              Auth.changeUser(Auth.getUsername(), Auth.getPassword());
+            }
+            else callback(false);
+          }
+        })
+      }
+
+
+      Auth.logout = function () {
+        Auth.clearCredentials();
+        OpenmrsSessionService.logout();
+        Auth.setPassword(null);
+        Auth.setAuthenticated(false);
+      };
+
+      return Auth;
+    }]);
+
+auth.factory('Base64', function () {
   var keyStr = 'ABCDEFGHIJKLMNOP' +
     'QRSTUVWXYZabcdef' +
     'ghijklmnopqrstuv' +
@@ -314,4 +316,5 @@ auth.factory('Auth', ['$injector','$rootScope','Base64', '$http', '$location', '
       return output;
     }
   };
-});;
+});
+;

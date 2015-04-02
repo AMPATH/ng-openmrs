@@ -21,7 +21,7 @@ localStorageServices.factory('localStorage.utils', [
       var name,t;
       for(var i in tables) {
         name = tables[i];
-        t = localStorage.setItem("defaulterCohorts","{}");
+        t = localStorage.setItem(name,"{}");
       }
     }
 
@@ -197,7 +197,7 @@ localStorageServices.factory('localStorage.utils', [
       var table = getTable(tableName);
       var item, field, resultSet = [];
       var re = new RegExp(searchString);
-
+      searchString = searchString.toLowerCase();
       for (var i in table) {
         item = table[i];
         if (encryptionPassword) {
@@ -207,14 +207,15 @@ localStorageServices.factory('localStorage.utils', [
           item = angular.fromJson(item);
           for (var j in queryFields) {
             field = queryFields[j];
-            if (re.test(escapeRegExp(item[field]))) {
+            if (item.toLowerCase().indexOf(searchString) != -1) {
               resultSet.push(item);
               break;
             }
           }
         }
-        else if (re.test(escapeRegExp(item))) {
-          resultSet.push(item);
+//        else if (re.test(escapeRegExp(angular.toJson(item)))) {
+        else if (item.toLowerCase().indexOf(searchString) != -1) {
+          resultSet.push(angular.fromJson(item));
         }
       }
       return resultSet;

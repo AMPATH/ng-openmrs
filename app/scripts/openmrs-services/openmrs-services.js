@@ -349,6 +349,7 @@ openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings
 
 
     PatientService.get = function (patientUuid, callback) {
+      console.log('uuid: ' + patientUuid);
       PatientRes = getResource();
       PatientRes.get({uuid: patientUuid},
         function (data, status, headers) {
