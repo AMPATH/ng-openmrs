@@ -15,29 +15,29 @@ formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'En
 
 
     FormEntryService.saveUserData = function(username) {
-      var pending = local.getAll(pendingSubmissionTable);
-      var drafts = local.getAll(draftsTable);
+      var pending = local.getTable(pendingSubmissionTable);
+      var drafts = local.getTable(draftsTable);
 
-      if(pending.length === 0 && drafts.length === 0) return;
+      if(Object.keys(pending).length === 0 && Object.keys(drafts).length === 0) return;
 
       var savedUserData = {};
-      if (pending.length > 0) savedUserData["openmrs.formentry.pending-submission"] = pending;
-      if (drafts.length > 0) savedUserData["openmrs.formentry.drafts"] = drafts;
-      local.set('openmrs.formentry.saved-user-data', username, savedUserData);
+      if (Object.keys(pending).length > 0) savedUserData["openmrs.formentry.pending-submission"] = pending;
+      if (Object.keys(drafts).length > 0) savedUserData["openmrs.formentry.drafts"] = drafts;
 
+      local.set('openmrs.formentry.saved-user-data', username, savedUserData);
+      local.reset([pendingSubmissionTable,draftsTable]);
     }
 
     FormEntryService.loadUserData = function(username) {
-      var userData = local.get('openmrs.formentry.saved-user-data',username,Auth.getPassword());
+      var userData = local.get('openmrs.formentry.saved-user-data',username);
+      console.log(userData);
       if(userData) {
-        local.setAll('openmrs.formentry.pending-submission', userData['openmrs.formentry.pending-submission'],
-          function (form) {
-            return form.savedFormId;
-          }, Auth.getPassword());
-        local.setAll('openmrs.formentry.drafts', userData['openmrs.formentry.drafts'],
-          function (form) {
-            return form.savedFormId;
-          }, Auth.getPassword());
+        if(userData['openmrs.formentry.pending-submission'])
+          local.setTable('openmrs.formentry.pending-submission', userData['openmrs.formentry.pending-submission']);
+
+        if(userData['openmrs.formentry.drafts'])
+          local.setTable('openmrs.formentry.drafts', userData['openmrs.formentry.drafts']);
+
         local.remove('openmrs.formentry.saved-user-data', username);
       }
     }
@@ -156,7 +156,7 @@ formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'En
 
       EncounterService.submit(restData, function (data) {
         if (form.savedFormId) FormEntryService.removeFromDrafts(form.savedFormId);
-
+        console.log(data);
         if (data === undefined || data === null || data.error) {
           console.log("FormEntryService.submit() : error submitting. Saving to local");
           form.restObs = restData.obs;

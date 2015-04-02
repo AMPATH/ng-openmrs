@@ -120,7 +120,12 @@ localStorageServices.factory('localStorage.utils', [
         if (encryptionPassword) {
           item = decrypt(item, encryptionPassword);
         }
-        item = angular.fromJson(item);
+        try {
+          item = angular.fromJson(item);
+        }
+        catch(e) {
+          console.log("item is encrypted, can not covert form json");
+        }
         return item;
       }
       else return null;
@@ -135,10 +140,19 @@ localStorageServices.factory('localStorage.utils', [
         if (encryptionPassword) {
           item = decrypt(item, encryptionPassword);
         }
-        item = angular.fromJson(item);
+        try {
+          item = angular.fromJson(item);
+        }
+        catch(e) {
+          console.log("item encrypted, can not be converted from json")
+        }
         resultSet.push(item);
       }
       return resultSet;
+    }
+
+    service.getTable = function(tableName) {
+      return angular.fromJson(localStorage.getItem(tableName));
     }
 
     service.set = function (tableName, key, item, encryptionPassword) {
@@ -188,6 +202,12 @@ localStorageServices.factory('localStorage.utils', [
       }
       localStorage.setItem(tableName, angular.toJson(table));
     }
+
+
+    service.setTable = function(tableName,table) {
+      localStorage.setItem(tableName,angular.toJson(table));
+    }
+
 
     function escapeRegExp(str) {
       return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");

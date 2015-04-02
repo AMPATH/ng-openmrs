@@ -28,7 +28,6 @@ mod.factory('NetworkManagerService', ['$rootScope','$interval','$timeout',
         "error",
         function (event) {
           console.log('Error retrieving appcache. User offline.')
-          $rootScope.online = false;
           networkMgr.online = false;
           networkMgr.restartTimer(defaultInterval, networkMgr.checkOnlineStatus);
         }
@@ -38,7 +37,6 @@ mod.factory('NetworkManagerService', ['$rootScope','$interval','$timeout',
         "noupdate cached downloading",
         function (event) {
           console.log('Success retrieving appcache. User online.')
-          $rootScope.online = true;
           networkMgr.online = true;
           console.log("User is online: " + new Date().toISOString());
           networkMgr.restartTimer(defaultInterval, networkMgr.checkOnlineStatus);
@@ -72,6 +70,12 @@ mod.factory('NetworkManagerService', ['$rootScope','$interval','$timeout',
       networkMgr.checkOnlineStatus();
       $timeout(function() {},1500);
       return networkMgr.online;
+    }
+
+    networkMgr.setOffline = function() {
+      networkMgr.stopTimer();
+      networkMgr.online = false;
+      networkMgr.countdown = -1;
     }
 
     return networkMgr;

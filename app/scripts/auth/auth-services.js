@@ -180,7 +180,7 @@ auth.factory('Auth',
           Auth.setAuthenticated(true);
           Auth.setUsername(username);
           Auth.setPassword(password);
-          Auth.changeUser(username);
+          Auth.changeUser(username,password);
           Auth.clearCredentials();
           $location.path("/apps");
         }
@@ -193,9 +193,8 @@ auth.factory('Auth',
 
 
       Auth.changeUser = function (curUsername,password) {
-        console.log(curUsername);
         var prevUsername = local.get('openmrs.settings', 'prevUsername');
-        var doesMatch = verifyLocalUser(username, password);
+        var doesMatch = verifyLocalUser(curUsername, password);
         if (doesMatch === undefined || doesMatch === false || prevUsername != curUsername) { //user does not exist or password has changed
           setLocalUser(curUsername, password);
           var services = $rootScope.servicesWithUserData, service;

@@ -24,6 +24,10 @@ layout.controller('HeaderCtrl',['$scope','$rootScope','$interval','NetworkManage
       NetworkManagerService.checkOnlineStatus();
     }
 
+    $scope.setOffline = function() {
+      NetworkManagerService.setOffline();
+    }
+
   }]);
 
 layout.controller('FooterCtrl',['$scope','OpenmrsSettings',

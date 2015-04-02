@@ -5,7 +5,7 @@
 var ngOpenmrsApp = angular.module('ngOpenmrsApp',
   [
     'ui.router',
-    //'ui.bootstrap',
+    'ui.bootstrap',
     'defaulterCohort',
     'openmrs.auth',
     'openmrs.formentry',
@@ -61,8 +61,7 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
           var template = FormEntryService.getTemplate($stateParams.formUuid);
           var html = $templateFactory.fromUrl(template);
           return html;
-        },
-
+        }
       })
       .state('encounter-forms-saved', {
         url: "/encounter-forms-saved",

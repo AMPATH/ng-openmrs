@@ -6,8 +6,11 @@
         <a class="navbar-brand navbar-right" href="#/logout">Logout</a>
         <div>
           Online: {{online}}
+          <div ng-show="online == 'True'">
+            <a ng-click="setOffline()">Work offline</a>
+          </div>
           <div ng-show="online == 'False'">
-            Reconnecting in {{countdown}} seconds.
+            <b ng-show="countdown !== -1">Reconnecting in {{countdown}} seconds.</b>
             <a ng-click="checkOnlineStatus()">Reconnect now...</a>
           </div>
         </div>

@@ -598,10 +598,10 @@ openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettin
           }
         })
         .error(function (data, status, headers, config) {
-          console.log("EncounterService.submit() : error:");
-          callback(data);
-          console.log(data);
-        });
+          var error = {data:data,error:true};
+          console.log("EncounterService.submit() : error:" + data);
+          callback(error);
+         });
 
     };
     return EncounterService;

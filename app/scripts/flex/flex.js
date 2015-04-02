@@ -18,6 +18,27 @@ flex.factory('OpenmrsFlexSettings', ['localStorage.utils','FormEntryService',
       var tables = ['openmrs.patient','openmrs.encounter'];
       local.reset(tables);
     }
+
+    service.saveUserData = function(username,tables) {
+      var savedUserData = {}, t;
+      for(var i in tables) {
+        t = local.getTable(tables[i]);
+        if(Object.keys(t).length > 0) savedUserData[tables[i]] = t;
+      }
+      if(Object.keys(savedUserData).length > 0)
+        local.set('openmrs.saved-user-data', username, savedUserData);
+      local.reset(tables);
+    }
+
+    service.loadUserData = function(username,tables) {
+      var userData = local.get('openmrs.saved-user-data',username);
+
+      for(var tableName in userData) {
+        local.setTable(tableName,userData[tableName]);
+      }
+      local.remove('openmrs.formentry.saved-user-data', username);
+    }
+
     return service;
 
   }]);
