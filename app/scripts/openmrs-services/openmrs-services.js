@@ -627,8 +627,8 @@ openmrsServices.factory('Location', ['$resource','OpenmrsSettings',
   }]);
 
 
-openmrsServices.factory('LocationService', ['$http', 'Location',
-  function ($http, Location) {
+openmrsServices.factory('LocationService', ['$resource', 'OpenmrsSettings',
+  function ($resource,OpenmrsSettings) {
     var LocationService = {},Location;
 
     function getResource() {
@@ -674,8 +674,8 @@ openmrsServices.factory('PersonAttribute', ['$resource','OpenmrsSettings',
   }]);
 
 
-openmrsServices.factory('PersonAttributeService', ['$resource','$http',
-  function ($resource, $http) {
+openmrsServices.factory('PersonAttributeService', ['$resource','OpenmrsSettings',
+  function ($resource, OpenmrsSettings) {
     var paService = {}, PersonAttribute;
 
     function getResource() {
