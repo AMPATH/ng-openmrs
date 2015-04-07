@@ -119,25 +119,31 @@ auth.factory('Auth',
       }
 
 
-      function verifyLocalUser(username, password) {
-        var user = getLocalUser(username);
-        if (user) {
-          var trialHash = getHash(password).toString();
-          return (trialHash === user.password);
-        }
-        else {
-          return undefined;
-        }
+      function verifyLocalUser(username, password,callback) {
+        console.log("Verifying offline user data");
+        local.get('openmrs.users', username, false,
+          function(user) {
+            console.log(user);
+            if (user) {
+              var trialHash = getHash(password).toString();
+              callback(trialHash === user.password);
+            }
+            else {
+              callback(undefined);
+            }
+          });
       }
 
 
       function getLocalUser(username) {
-        return local.get('openmrs.users', username);
+        return local.get('openmrs.users', username,function(data) {return data;});
       }
 
 
       function setLocalUser(username, password) {
+        console.log('setting password');
         var passwordHash = getHash(password).toString();
+        console.log('finished setting password');
         var user = {username: username, password: passwordHash};
         local.set('openmrs.users', username, user);
       }
@@ -174,38 +180,47 @@ auth.factory('Auth',
 
         console.log('Auth.authenticateLocal() : authenticating locally');
         Auth.setAuthType('local');
-        var doesMatch = verifyLocalUser(username, password);
-        console.log('Locally Authenticated: ' + doesMatch);
-        if (doesMatch) {
-          Auth.setAuthenticated(true);
-          Auth.setUsername(username);
-          Auth.setPassword(password);
-          Auth.changeUser(username,password);
-          Auth.clearCredentials();
-          $location.path("/apps");
-        }
-        else {
-          Auth.setAuthenticated(false);
-          Auth.setPassword(null);
-          callback(false);
-        }
+        verifyLocalUser(username, password,
+          function(doesMatch) {
+            console.log('Locally Authenticated: ' + doesMatch);
+            if (doesMatch) {
+              Auth.setAuthenticated(true);
+              Auth.setUsername(username);
+              Auth.setPassword(password);
+              Auth.changeUser(username, password);
+              Auth.clearCredentials();
+              $location.path("/apps");
+            }
+            else {
+              Auth.setAuthenticated(false);
+              Auth.setPassword(null);
+              callback(false);
+            }
+          });
       };
 
 
       Auth.changeUser = function (curUsername,password) {
-        var prevUsername = local.get('openmrs.settings', 'prevUsername');
-        var doesMatch = verifyLocalUser(curUsername, password);
-        if (doesMatch === undefined || doesMatch === false || prevUsername != curUsername) { //user does not exist or password has changed
-          setLocalUser(curUsername, password);
-          var services = $rootScope.servicesWithUserData, service;
-          for (var i in services) {
-            service = $injector.get(services[i]);
-            service.changeUser(prevUsername, curUsername);
-          }
-          local.set('openmrs.settings', 'prevUsername', curUsername);
-        }
-
+        console.log("Changing user...")
+        local.get('openmrs.settings', 'prevUsername',false,
+          function (prevUsername) {
+            console.log("prevUsername: " + prevUsername);
+            verifyLocalUser(curUsername, password,
+              function (doesMatch) {
+                console.log("doesMatch:" + doesMatch);
+                if (doesMatch === undefined || doesMatch === false || prevUsername != curUsername) { //user does not exist or password has changed
+                  setLocalUser(curUsername, password);
+                  var services = $rootScope.servicesWithUserData, service;
+                  for (var i in services) {
+                    service = $injector.get(services[i]);
+                    service.changeUser(prevUsername, curUsername);
+                  }
+                  local.set('openmrs.settings', 'prevUsername', curUsername);
+                }
+              });
+          });
       }
+
 
       Auth.authenticateOpenmrsContext = function (callback) {
         if(Auth.getUsername() === undefined) return;

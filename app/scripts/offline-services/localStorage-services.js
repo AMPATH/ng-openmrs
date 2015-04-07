@@ -1,11 +1,16 @@
 'use strict';
 
-var localStorageServices = angular.module('localStorageServices', []);
+var localStorageServices = angular.module('localStorageServices',[]);
 
 
 localStorageServices.factory('localStorage.utils', [
-  function () {
+  function (Auth) {
     var service = {};
+    var encryptionPassword;
+
+    service.setPassword = function(password) {
+      encryptionPassword = password;
+    }
 
     service.init = function(tables) {
       var name,t;
@@ -26,7 +31,6 @@ localStorageServices.factory('localStorage.utils', [
     }
 
 
-
     function getTable(name) {
       return angular.fromJson(localStorage.getItem(name));
     }
@@ -37,12 +41,12 @@ localStorageServices.factory('localStorage.utils', [
 
 
     //expects message to be a string
-    function encrypt(message, password) {
-      return CryptoJS.Rabbit.encrypt(message, password).toString();
+    function encrypt(message) {
+      return CryptoJS.Rabbit.encrypt(message, encryptionPassword).toString();
     }
 
-    function decrypt(message, password) {
-      return CryptoJS.Rabbit.decrypt(message, password).toString(CryptoJS.enc.Utf8);
+    function decrypt(message) {
+      return CryptoJS.Rabbit.decrypt(message, encryptionPassword).toString(CryptoJS.enc.Utf8);
     }
 
 
@@ -112,13 +116,14 @@ localStorageServices.factory('localStorage.utils', [
     /*
      Returns null if key not in table
      */
-    service.get = function (tableName, key, encryptionPassword) {
+    service.get = function (tableName, key, usesEncryption, callback) {
       console.log('LocalStorageServices.get() : table: ' + tableName + " key: " + key);
       var table = getTable(tableName);
+      var item = null;
       if (key in table) {
         var item = table[key];
-        if (encryptionPassword) {
-          item = decrypt(item, encryptionPassword);
+        if (usesEncryption) {
+          item = decrypt(item);
         }
         try {
           item = angular.fromJson(item);
@@ -126,19 +131,18 @@ localStorageServices.factory('localStorage.utils', [
         catch(e) {
           console.log("item is encrypted, can not covert form json");
         }
-        return item;
+        callback(item);
       }
-      else return null;
     };
 
 
-    service.getAll = function (tableName, encryptionPassword) {
+    service.getAll = function (tableName, usesEncryption,callback) {
       var table = getTable(tableName);
       var resultSet = new Array;
       for (var key in table) {
         var item = table[key];
-        if (encryptionPassword) {
-          item = decrypt(item, encryptionPassword);
+        if (usesEncryption) {
+          item = decrypt(item);
         }
         try {
           item = angular.fromJson(item);
@@ -148,64 +152,69 @@ localStorageServices.factory('localStorage.utils', [
         }
         resultSet.push(item);
       }
-      return resultSet;
+      callback(resultSet);
     }
 
     service.getTable = function(tableName) {
       return angular.fromJson(localStorage.getItem(tableName));
     }
 
-    service.set = function (tableName, key, item, encryptionPassword) {
+    service.set = function (tableName, key, item, usesEncryption,callback) {
       var table = getTable(tableName);
       item = angular.toJson(item);
-      if (encryptionPassword) {
-        item = encrypt(item, encryptionPassword);
+      if (usesEncryption) {
+        item = encrypt(item);
       }
       table[key] = item;
       setTable(tableName, table);
       service.setExpirationDate(tableName, key);
+      if(callback) callback(true);
     }
 
 
     /*
      This will not overwrite but add each item in items to the table.
      */
-    service.setQuerySet = function (tableName, items, keyGetter, encryptionPassword) {
+    service.setQuerySet = function (tableName, items, keyGetter, usesEncryption,callback) {
       var table = getTable(tableName);
       for (var i in items) {
         var item = items[i];
         var key = keyGetter(item);
         item = angular.toJson(item);
-        if (encryptionPassword) {
-          item = encrypt(item, encryptionPassword);
+        if (usesEncryption) {
+          item = encrypt(item);
         }
         table[key] = item;
       }
+      if(callback) callback(true);
     }
+
 
 
     /*
      tableName: name of the object in localStorage
      items: an array of items to be put into the table. This maps to a rest result which is typically an array of items.
      keyGetter: a function to pull the key from an array item. this is used to store within the table
-     encryptionPassword: if this is is to be encrypted, the password to encrypt with.
+     usesEncryption: if this is is to be encrypted, the password to encrypt with.
      */
-    service.setAll = function (tableName, items, keyGetter, encryptionPassword) {
+    service.setAll = function (tableName, items, keyGetter, usesEncryption,callback) {
       var table = {};
       for (var i in items) {
         var key = keyGetter(items[i]);
         var item = angular.toJson(items[i]);
-        if (encryptionPassword) {
-          item = encrypt(item, encryptionPassword);
+        if (usesEncryption) {
+          item = encrypt(item);
         }
         table[key] = item;
       }
       localStorage.setItem(tableName, angular.toJson(table));
+      callback(true);
     }
 
 
-    service.setTable = function(tableName,table) {
+    service.setTable = function(tableName,table,callback) {
       localStorage.setItem(tableName,angular.toJson(table));
+      callback(true);
     }
 
 
@@ -213,15 +222,15 @@ localStorageServices.factory('localStorage.utils', [
       return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
     }
 
-    service.query = function (tableName, queryFields, searchString, encryptionPassword) {
+    service.query = function (tableName, queryFields, searchString, usesEncryption,callback) {
       var table = getTable(tableName);
       var item, field, resultSet = [];
       var re = new RegExp(searchString);
       searchString = searchString.toLowerCase();
       for (var i in table) {
         item = table[i];
-        if (encryptionPassword) {
-          item = decrypt(item, encryptionPassword);
+        if (usesEncryption) {
+          item = decrypt(item);
         }
         if (queryFields) {
           item = angular.fromJson(item);
@@ -238,7 +247,7 @@ localStorageServices.factory('localStorage.utils', [
           resultSet.push(angular.fromJson(item));
         }
       }
-      return resultSet;
+      callback(resultSet);
     };
 
 

@@ -5,17 +5,20 @@
 var ngOpenmrsApp = angular.module('ngOpenmrsApp',
   [
     'ui.router',
-    'ui.bootstrap',
+    'localStorageServices',
+    'data-manager',
+    //'ui.bootstrap',
     'defaulterCohort',
     'openmrs.auth',
+    'network-manager',
+
     'openmrs.formentry',
-    'openmrsServices',
+    'openmrs-services-extended',
     'flex',
     'patientSearch',
     'patientDashboard',
     'spinner',
-    'layout',
-    'network-manager'
+    'layout'
   ]);
 
 ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
@@ -94,8 +97,11 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 
       });
 
-      $rootScope.servicesWithUserData = ['OpenmrsFlexSettings', 'DefaulterCohortService'];
       NetworkManagerService.init();
+
+      /*
+      $rootScope.servicesWithUserData = ['OpenmrsFlexSettings', 'DefaulterCohortService'];
       OpenmrsFlexSettings.init();
       DefaulterCohortService.init();
+      */
     }]);
