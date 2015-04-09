@@ -5,7 +5,7 @@
 
 'use strict';
 
-var mod = angular.module('patientSearch');
+var mod = angular.module('patient-search');
 mod.controller('PatientSearchCtrl', ['$scope', 'PatientService',
   function ($scope, PatientService) {
     $scope.filter = "";

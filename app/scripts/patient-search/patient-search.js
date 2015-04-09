@@ -2,7 +2,7 @@
  * Created by Jonathan on 4/9/2015.
  */
 'use strict';
-var mod = angular.module('patientSearch', ['openmrs-services-extended']);
+var mod = angular.module('patient-search', ['openmrs-services-extended']);
 
 mod.config(['$stateProvider',
   function ($stateProvider) {

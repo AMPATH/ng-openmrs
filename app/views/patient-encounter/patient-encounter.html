@@ -1,5 +1,7 @@
+
 <div ng-controller="PatientEncounterCtrl">
   <div class="container-fluid">
+    <a class="btn btn-custom btn-lg btn-block" back-button>Back</a>
     <a ui-sref="formentry({encounterUuid:encounter.uuid,formUuid:encounter.form.uuid,patientUuid:encounter.patient.uuid})">Edit Form</a><br/>
     Date: {{encounter.encounterDatetime}}<br/>
     Location : {{encounter.location.display}}<br/>

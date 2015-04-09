@@ -5,7 +5,7 @@
 var session = sessionStorage;
 var DEFAULTER_COHORT_CONTEXT = "https://testserver1.ampath.or.ke";
 
-var dc = angular.module('defaulterCohort');
+var dc = angular.module('defaulter-cohort');
 
 dc.factory('DefaulterCohort', ['$resource',
   function ($resource) {

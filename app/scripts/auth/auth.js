@@ -2,4 +2,4 @@
 
 /* Services */
 
-var auth = angular.module('openmrs.auth', ['ngResource', 'openmrs-services-extended', 'localStorageServices']);
+var auth = angular.module('openmrs-auth', ['ngResource', 'openmrs-services-extended', 'localStorageServices']);

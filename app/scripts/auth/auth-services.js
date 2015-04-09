@@ -2,7 +2,7 @@
 
 /* Services */
 
-var auth = angular.module('openmrs.auth');
+var auth = angular.module('openmrs-auth');
 
 auth.factory('Auth',
   ['$injector',

@@ -2,7 +2,7 @@
 
 /* Controllers */
 
-var formEntry = angular.module('openmrs.formentry');
+var formEntry = angular.module('openmrs-formentry');
 
 formEntry.controller('SavedFormsCtrl', ['$scope', '$stateParams', 'FormEntryService', 'PatientService',
   function ($scope, $stateParams, FormEntryService, PatientService) {

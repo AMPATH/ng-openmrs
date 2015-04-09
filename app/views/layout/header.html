@@ -2,18 +2,20 @@
   <nav class="navbar navbar-default" role="navigation">
     <div class="container-fluid header">
       <div class="navbar-header">
+        <span>
+          <span>Online: {{online}}</span>
+          <span ng-show="online == 'True'">
+            <a ng-click="setOffline()">[Work offline...]</a>
+          </span>
+          <span ng-show="online == 'False'">
+            <span ng-show="countdown !== -1">... Reconnecting in {{countdown}} seconds.</span>
+            <a ng-click="checkOnlineStatus()">[Reconnect now...]</a>
+          </span>
+        </span>
+        <br/>
         <a class="navbar-brand navbar-left" href="#/apps">AMRS Angular</a>
         <a class="navbar-brand navbar-right" href="#/logout">Logout</a>
-        <div>
-          <div>Online: {{online}}</div>
-          <div ng-show="online == 'True'">
-            <a ng-click="setOffline()">Work offline</a>
-          </div>
-          <div ng-show="online == 'False'">
-            <b ng-show="countdown !== -1">Reconnecting in {{countdown}} seconds.</b>
-            <a ng-click="checkOnlineStatus()">Reconnect now...</a>
-          </div>
-        </div>
       </div>
+    </div>
   </nav>
 </div>

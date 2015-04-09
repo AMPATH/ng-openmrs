@@ -1,6 +1,6 @@
 'use strict';
 
-var formEntry = angular.module('openmrs.formentry', ['localStorageServices', 'spinner']);
+var formEntry = angular.module('openmrs-formentry', ['localStorageServices', 'spinner']);
 
 formEntry.config(['$stateProvider',
   function ($stateProvider) {

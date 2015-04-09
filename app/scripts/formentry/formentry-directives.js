@@ -2,7 +2,7 @@
 
 /* Directives */
 
-var formEntry = angular.module('openmrs.formentry');
+var formEntry = angular.module('openmrs-formentry');
 
 formEntry
   .directive('htmlForm', ['$parse', '$compile', '$state', 'FormEntryService',
@@ -99,7 +99,7 @@ formEntry
     }
   }])
 
-  .directive('providersDropdown', ['ProviderService', 'Flex', function () {
+  .directive('providersDropdown', ['ProviderService', function () {
     return {
       restrict: "E",
       scope: {
@@ -107,13 +107,8 @@ formEntry
         label: '@',
         name: '@'
       },
-      controller: function ($scope, ProviderService, Flex) {
-        Flex.getAll(ProviderService,
-          function (provider) {
-            return provider.uuid
-          }, //keygetter
-          true, //store offline
-          null, //no encryption
+      controller: function ($scope, ProviderService) {
+        ProviderService.query({},false,
           function (providers) { // callback
             $scope.providers = providers;
           }
@@ -131,7 +126,7 @@ formEntry
         label: '@',
         name: '@',
       },
-      controller: function ($scope, ProviderService, Flex) {
+      controller: function ($scope, ProviderService) {
         DefaulterCohortService.getOutreachProviders(function (data) {
           //console.log(data);
           $scope.outreachProviders = data;

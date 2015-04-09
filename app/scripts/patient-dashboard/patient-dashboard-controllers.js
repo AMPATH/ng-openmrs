@@ -3,7 +3,7 @@
 /* Controllers */
 
 
-var pd = angular.module('patientDashboard');
+var pd = angular.module('patient-dashboard');
 
 pd.controller('PatientDashboardCtrl', ['$scope', '$stateParams','$timeout', 'PatientService',
   function ($scope, $stateParams, $timeout, PatientService) {

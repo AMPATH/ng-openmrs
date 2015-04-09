@@ -3,7 +3,7 @@
 /* Controllers */
 
 
-var dc = angular.module('defaulterCohort');
+var dc = angular.module('defaulter-cohort');
 
 dc.controller('DefaulterCohortCtrl', ['$scope', '$http', 'Auth', 'DefaulterCohortService',
   function ($scope, $http, Auth, DefaulterCohortService) {

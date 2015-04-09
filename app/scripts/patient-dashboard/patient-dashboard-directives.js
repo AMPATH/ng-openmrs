@@ -3,7 +3,7 @@
 /* Directives */
 
 
-angular.module('patientDashboard')
+angular.module('patient-dashboard')
   .directive('encountersPane', ['$state', 'EncounterService', 'OpenmrsUtilityService',
     function ($state, EncounterService, OpenmrsUtilityService) {
       return {

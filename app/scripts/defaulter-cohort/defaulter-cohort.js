@@ -1,6 +1,6 @@
 'use strict';
 
-var mod = angular.module('defaulterCohort', ['ngResource', 'ngCookies', 'openmrs-services-extended', 'spinner', 'localStorageServices']);
+var mod = angular.module('defaulter-cohort', ['ngResource', 'ngCookies', 'openmrs-services-extended', 'spinner', 'localStorageServices']);
 
 mod.config(['$stateProvider',
   function ($stateProvider) {
