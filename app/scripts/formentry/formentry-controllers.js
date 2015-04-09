@@ -4,35 +4,40 @@
 
 var formEntry = angular.module('openmrs.formentry');
 
-formEntry.controller('SavedFormsCtrl', ['$scope', '$stateParams', 'FormEntryService', 'Auth', 'Flex', 'PatientService',
-  function ($scope, $stateParams, FormEntryService, Auth, Flex, PatientService) {
+formEntry.controller('SavedFormsCtrl', ['$scope', '$stateParams', 'FormEntryService', 'PatientService',
+  function ($scope, $stateParams, FormEntryService, PatientService) {
 
 
     function loadPatient(patientUuid, obj) {
-      Flex.get(PatientService, patientUuid, true, Auth.getPassword(), function (p) {
-        obj.p = PatientService.Patient(p.patientData);
+      PatientService.get(patientUuid, function (p) {
+        obj.p = p;
       });
     };
 
 
     $scope.loadDrafts = function () {
-      var savedDrafts = FormEntryService.getDrafts();
-      for (var i in savedDrafts) {
-        savedDrafts[i].patient = PatientService.Patient(savedDrafts[i].patient.patientData);
-      }
-      $scope.savedDrafts = savedDrafts;
+      FormEntryService.getDrafts(null,
+        function(savedDrafts) {
+          for (var i in savedDrafts) {
+            savedDrafts[i].patient = PatientService.Patient(savedDrafts[i].patient.patientData);
+          }
+          $scope.savedDrafts = savedDrafts;
+        }
+      );
 
     };
 
 
     $scope.loadPendingSubmission = function () {
-      var forms = FormEntryService.getPendingSubmission();
-      console.log(forms);
-      for (var i in forms) {
-        forms[i].p = PatientService.Patient(forms[i].patient.patientData);
-      }
-      $scope.pendingSubmission = forms;
-
+      FormEntryService.getPendingSubmission(null,
+        function(forms) {
+          console.log(forms);
+          for (var i in forms) {
+            forms[i].p = PatientService.Patient(forms[i].patient.patientData);
+          }
+          $scope.pendingSubmission = forms;
+        }
+      );
     };
 
 
@@ -46,29 +51,50 @@ formEntry.controller('SavedFormsCtrl', ['$scope', '$stateParams', 'FormEntryServ
   }]);
 
 
-formEntry.controller('FormEntryCtrl', ['$scope', '$stateParams', 'Auth', 'Flex', 'EncounterService', 'PatientService', 'FormEntryService', 'spinnerService',
-  function ($scope, $stateParams, Auth, Flex, EncounterService, PatientService, FormEntryService, spinner) {
+formEntry.controller('FormEntryCtrl', ['$scope', '$stateParams', 'EncounterService', 'PatientService', 'FormEntryService', 'spinnerService',
+  function ($scope, $stateParams, EncounterService, PatientService, FormEntryService, spinner) {
     $scope.patientUuid = $stateParams.patientUuid;
-    Flex.get(PatientService, $stateParams.patientUuid, true, Auth.getPassword(), function (patient) {
-      $scope.patient = PatientService.Patient(patient.patientData);
-    });
+    PatientService.get($stateParams.patientUuid,
+      function (patient) {
+        $scope.patient = PatientService.Patient(patient.patientData);
+      }
+    );
 
 
     if ($stateParams.savedFormId) { //loading a saved form
-      var savedForm = FormEntryService.getDrafts($stateParams.savedFormId);
-      if (savedForm === null) savedForm = FormEntryService.getPendingSubmission($stateParams.savedFormId);
-      $scope.form = savedForm;
-      console.log(savedForm);
+      console.log("loading saved form");
+      FormEntryService.getDrafts($stateParams.savedFormId,
+        function (savedForm) {
+          if (savedForm) $scope.form = savedForm;
+          else {
+            FormEntryService.getPendingSubmission($stateParams.savedFormId,
+              function (savedForm) {
+                console.log(savedForm);
+                $scope.form = savedForm;
+              }
+            );
+          }
+        }
+      )
     }
-
     else if ($stateParams.encounterUuid) { //loading a form for an encounter on the server
+      console.log('loading existing form');
       $scope.encounterUuid = $stateParams.encounterUuid;
-      Flex.get(EncounterService, $stateParams.encounterUuid, true, Auth.getPassword(), function (data) {
-        $scope.existingEncounter = data;
+      var params = {uuid:$stateParams.encounterUuid};
+      console.log(params);
+      EncounterService.get(params, function (data) {
+        console.log(data);
+        if("obs" in data)
+          $scope.existingEncounter = data;
+        else {
+          EncounterService.getServer(params,function(data){$scope.existingEncounter = data;});
+        }
+
       });
 
     }
     else { //This is loading a new form
+      console.log("loading new form");
       var d = new Date();
       $scope.encounter = {
         patient: $scope.patientUuid,

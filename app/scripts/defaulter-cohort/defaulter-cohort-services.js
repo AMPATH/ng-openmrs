@@ -5,8 +5,7 @@
 var session = sessionStorage;
 var DEFAULTER_COHORT_CONTEXT = "https://testserver1.ampath.or.ke";
 
-var dc = angular.module('defaulterCohort', ['ngResource', 'ngCookies', 'openmrsServices', 'spinner', 'localStorageServices']);
-
+var dc = angular.module('defaulterCohort');
 
 dc.factory('DefaulterCohort', ['$resource',
   function ($resource) {
@@ -160,25 +159,23 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
 
     DefaulterCohortService.getOutreachProviders = function (callback) {
       var url = DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_outreach_providers';
-      var providers = local.getAll('outreach-providers');
-
-      if (providers === undefined || providers === null || Object.keys(providers).length == 0) {
-        console.log('Getting outreach providers from server');
-        $http.get(url).success(function (data) {
-          console.log('got outreach providers');
-          local.setAll("outreach-providers", data, function (p) {
-            return p.uuid;
-          });
-          providers = data;
-          if (callback) callback(providers);
-        }).error(function (error) {
-          console.log(error);
-        });
-      }
-      else {
-        if (callback) callback(providers);
-        else return providers;
-      }
+      local.query('outreach-providers',null,null,false,
+        function(providers) {
+          if (providers === undefined || providers === null || Object.keys(providers).length == 0) {
+            console.log('Getting outreach providers from server');
+            $http.get(url).success(function (data) {
+              local.setAll("outreach-providers", data, function (p) {
+                return p.uuid;
+              });
+              providers = data;
+              if (callback) callback(providers);
+            }).error(function (error) {
+              console.log(error);
+            });
+          }
+          callback(providers);
+        }
+      );
     };
 
 

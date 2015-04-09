@@ -5,8 +5,8 @@
 
 'use strict';
 
-var mod = angular.module('patientSearch', ['openmrsServices', 'flex', 'openmrs.auth']);
-mod.controller('PatientSearchCtrl', ['$scope', 'PatientService', 'Flex', 'Auth',
+var mod = angular.module('patientSearch');
+mod.controller('PatientSearchCtrl', ['$scope', 'PatientService',
   function ($scope, PatientService) {
     $scope.filter = "";
     $scope.patients = [];
@@ -17,12 +17,11 @@ mod.controller('PatientSearchCtrl', ['$scope', 'PatientService', 'Flex', 'Auth',
       v += "person:(uuid,gender,birthdate,preferredName:(givenName,middleName,familyName),birthdate,attributes:(attributeType:(uuid),uuid)))";
 
       if (searchString && searchString.length > 3) {
-        PatientService.query(searchString,
+        PatientService.query({q:searchString},
           function (data) {
-            if (data.results) { //this is coming from server
-              for (var i in data.results) {
-                $scope.patients.push(PatientService.Patient(data.results[i]));
-              }
+            if (data.results) data = data.results;
+            for (var i in data) {
+              $scope.patients.push(PatientService.Patient(data[i]));
             }
           }
         );

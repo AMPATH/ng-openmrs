@@ -1,0 +1,14 @@
+<div ng-controller="PatientEncounterCtrl">
+  <div class="container-fluid">
+    <a ui-sref="formentry({encounterUuid:encounter.uuid,formUuid:encounter.form.uuid,patientUuid:encounter.patient.uuid})">Edit Form</a><br/>
+    Date: {{encounter.encounterDatetime}}<br/>
+    Location : {{encounter.location.display}}<br/>
+    Encounter Type: {{encounter.encounterType.display}}<br/>
+    Provider : {{encounter.provider.display}}<br/>
+    <br/>
+    Questions:<br/>
+    <div ng-repeat="n in encounter.obs">
+      {{n.concept.display}} : <span ng-if="n.value.display">{{n.value.display}}</span><span ng-if="n.value.display === undefined">{{n.value}}</span>
+    </div>
+  </div>
+</div>

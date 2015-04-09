@@ -13,7 +13,8 @@ formEntry
         controller: function ($scope) {
           $scope.id = 0;
           $scope.obsCount = 0;
-          $scope.form = {patient: $scope.patient};
+          if(!$scope.form) $scope.form = {patient: $scope.patient};
+
 
           this.getId = function () {
             return $scope.id++;
@@ -79,7 +80,7 @@ formEntry
     }
   }])
 
-  .directive('clinicLocationsDropdown', ['LocationService', 'Flex', function () {
+  .directive('clinicLocationsDropdown', ['LocationService', function () {
     return {
       restrict: "EA",
       scope: {
@@ -87,13 +88,8 @@ formEntry
         label: '@',
         name: '@',
       },
-      controller: function ($scope, LocationService, Flex) {
-        Flex.getAll(LocationService,
-          function (location) {
-            return location.uuid
-          }, //keygetter
-          true, //store offline
-          null, //no encryption
+      controller: function ($scope, LocationService) {
+        LocationService.query({},
           function (locations) {
             $scope.locations = locations;
           } // callback
@@ -441,6 +437,13 @@ formEntry
             }
             setValue(newValue);
           });
+
+          scope.$watch(lineage,function(newValue,oldValue) {
+              if(newValue) {
+                setValue(newValue);
+              }
+            }
+          )
 
 
           //Only watch for first level obs/obsgroups. Any obsgroups will be filled when the parent obs is loaded.

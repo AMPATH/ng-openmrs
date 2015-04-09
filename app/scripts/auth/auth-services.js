@@ -2,7 +2,7 @@
 
 /* Services */
 
-var auth = angular.module('openmrs.auth', ['ngResource', 'openmrsServices', 'localStorageServices']);
+var auth = angular.module('openmrs.auth');
 
 auth.factory('Auth',
   ['$injector',
@@ -14,7 +14,8 @@ auth.factory('Auth',
     'OpenmrsUserService',
     'NetworkManagerService',
     'localStorage.utils',
-    function ($injector, $rootScope, Base64, $http, $location, OpenmrsSessionService, OpenmrsUserService, NetworkManagerService,local) {
+    'DataManagerService',
+    function ($injector, $rootScope, Base64, $http, $location, OpenmrsSessionService, OpenmrsUserService, NetworkManagerService,local,dataMgr) {
       var Auth = {};
 
       Auth.authenticated = null;
@@ -36,7 +37,9 @@ auth.factory('Auth',
 
       Auth.setPassword = function (password) {
         this.curPassword = password;
+        local.setPassword(password);
       };
+
       Auth.getPassword = function () {
         return this.curPassword;
       };
@@ -120,10 +123,9 @@ auth.factory('Auth',
 
 
       function verifyLocalUser(username, password,callback) {
-        console.log("Verifying offline user data");
         local.get('openmrs.users', username, false,
           function(user) {
-            console.log(user);
+
             if (user) {
               var trialHash = getHash(password).toString();
               callback(trialHash === user.password);
@@ -141,9 +143,7 @@ auth.factory('Auth',
 
 
       function setLocalUser(username, password) {
-        console.log('setting password');
         var passwordHash = getHash(password).toString();
-        console.log('finished setting password');
         var user = {username: username, password: passwordHash};
         local.set('openmrs.users', username, user);
       }
@@ -182,7 +182,6 @@ auth.factory('Auth',
         Auth.setAuthType('local');
         verifyLocalUser(username, password,
           function(doesMatch) {
-            console.log('Locally Authenticated: ' + doesMatch);
             if (doesMatch) {
               Auth.setAuthenticated(true);
               Auth.setUsername(username);
@@ -201,20 +200,13 @@ auth.factory('Auth',
 
 
       Auth.changeUser = function (curUsername,password) {
-        console.log("Changing user...")
         local.get('openmrs.settings', 'prevUsername',false,
           function (prevUsername) {
-            console.log("prevUsername: " + prevUsername);
             verifyLocalUser(curUsername, password,
               function (doesMatch) {
-                console.log("doesMatch:" + doesMatch);
                 if (doesMatch === undefined || doesMatch === false || prevUsername != curUsername) { //user does not exist or password has changed
                   setLocalUser(curUsername, password);
-                  var services = $rootScope.servicesWithUserData, service;
-                  for (var i in services) {
-                    service = $injector.get(services[i]);
-                    service.changeUser(prevUsername, curUsername);
-                  }
+                  dataMgr.changeUser(prevUsername,curUsername);
                   local.set('openmrs.settings', 'prevUsername', curUsername);
                 }
               });

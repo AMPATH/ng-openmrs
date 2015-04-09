@@ -3,7 +3,7 @@
 /* Directives */
 
 
-angular.module('patientDashboard', ['openmrsServices', 'flex', 'utility.widgets'])
+angular.module('patientDashboard')
   .directive('encountersPane', ['$state', 'EncounterService', 'OpenmrsUtilityService',
     function ($state, EncounterService, OpenmrsUtilityService) {
       return {
@@ -23,7 +23,9 @@ angular.module('patientDashboard', ['openmrsServices', 'flex', 'utility.widgets'
               }
             }
 
-            $state.go('formentry', {encounterUuid: encUuid, patientUuid: $scope.patientUuid, formUuid: formUuid});
+            //$state.go('formentry', {encounterUuid: encUuid, patientUuid: $scope.patientUuid, formUuid: formUuid});
+
+            $state.go('encounter', {uuid: encUuid});
           };
 
         },

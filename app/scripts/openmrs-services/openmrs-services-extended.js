@@ -1,16 +1,17 @@
 'use strict';
 
 
-var openmrsSettings = angular.module('openmrs-settings',[]);
+var openmrsSettings = angular.module('openmrs-settings',['localStorageServices']);
 
-openmrsSettings.factory('OpenmrsSettings', ['$injector',
-  function ($injector) {
+openmrsSettings.factory('OpenmrsSettings', ['$injector','localStorage.utils',
+  function ($injector,local) {
     var settings = {};
-    settings.context = "http://etl1.ampath.or.ke:8080/amrs";
+
+    settings.context = "https://amrs.ampath.or.ke:8443/amrs";
     settings.contextOptions =
       [
-        "http://etl1.ampath.or.ke:8080/amrs",
-        "https://amrs.ampath.or.ke:8443/amrs"
+        "https://amrs.ampath.or.ke:8443/amrs",
+        "http://etl1.ampath.or.ke:8080/amrs"
       ];
 
     settings.getContextOptions = function() {
@@ -34,6 +35,39 @@ openmrsSettings.factory('OpenmrsSettings', ['$injector',
     settings.getContext = function() {
       return settings.context;
     }
+
+    settings.init = function () {
+      var tables = ['openmrs.patient', 'expiration', 'openmrs.provider', 'openmrs.location', 'openmrs.encounter','openmrs.users','openmrs.settings'];
+      local.init(tables);
+      FormEntryService.init();
+    }
+
+    settings.changeUser = function(prevUsername, curUsername) {
+      FormEntryService.changeUser(prevUsername,curUsername);
+      var tables = ['openmrs.patient','openmrs.encounter'];
+      local.reset(tables);
+    }
+
+    settings.saveUserData = function(username,tables) {
+      var savedUserData = {}, t;
+      for(var i in tables) {
+        t = local.getTable(tables[i]);
+        if(Object.keys(t).length > 0) savedUserData[tables[i]] = t;
+      }
+      if(Object.keys(savedUserData).length > 0)
+        local.set('openmrs.saved-user-data', username, savedUserData);
+      local.reset(tables);
+    }
+
+    settings.loadUserData = function(username,tables) {
+      var userData = local.get('openmrs.saved-user-data',username);
+
+      for(var tableName in userData) {
+        local.setTable(tableName,userData[tableName]);
+      }
+      local.remove('openmrs.formentry.saved-user-data', username);
+    }
+
     return settings;
   }]);
 
@@ -116,8 +150,9 @@ openmrsServices.factory('PersonService', ['$resource','OpenmrsSettings','DataMan
 
     /*
      * Extended Resource Settings
-     * usesEncryption: true,
+     * storeOffline: true,
      * resourceName: openmrs.person
+     * usesEncryption: true,
      * primaryKey : "uuid"
      * queryFields : all (for now)
      */
@@ -147,8 +182,9 @@ openmrsServices.factory('ProviderService', ['OpenmrsSettings','DataManagerServic
 
     /*
      * Extended Resource Settings
-     * usesEncryption: false,
+     * storeOffline: true,
      * resourceName: openmrs.provider
+     * usesEncryption: true,
      * primaryKey : "uuid"
      * queryFields : all (for now)
      */
@@ -282,8 +318,9 @@ openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings
 
     /*
      * Extended Resource Settings
-     * usesEncryption: true,
+     * storeOffline: true,
      * resourceName: openmrs.patient
+     * usesEncryption: true,
      * primaryKey : "uuid"
      * queryFields : all (for now)
      */
@@ -303,22 +340,25 @@ openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings
 
 
     PatientService.get = function (patientUuid, callback) {
-      console.log('uuid: ' + patientUuid);
       PatientRes = getResource();
 
       PatientRes.get({uuid:patientUuid},
         function (data) {
-          var d = data;
-          if (data.result) d = new Patient(data);
+          console.log(data);
+          var d = new Patient(data);
           callback(d);
         }
       );
     };
 
-    PatientService.query = function(searchString,callback) {
+    PatientService.query = function(params,callback) {
       PatientRes = getResource();
-      console.log(PatientRes);
-      PatientRes.query(searchString,function(data) {callback(data);});
+      PatientRes.query(params,false, function(data) {callback(data);});
+    }
+
+    PatientService.saveLocal = function(key,item,callback) {
+      PatientRes = getResource();
+      PatientRes.saveLocal(key,item,callback);
     }
 
     return PatientService;
@@ -334,12 +374,12 @@ openmrsServices.factory('FormService', ['$resource','OpenmrsSettings','DataManag
     var r, resourceName = "openmrs.form";
     /*
      * Extended Resource Settings
+     * storeOffline: true,
+     * resourceName: openmrs.form
      * usesEncryption: true,
-     * resourceName: openmrs.person
      * primaryKey : "uuid"
      * queryFields : all (for now)
      */
-
     function getResource() {
       var v = "custom:(uuid,name,encounterType:(uuid,name))";
       r = $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/form/:uuid",
@@ -365,10 +405,7 @@ openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings','D
 
     /*
      * Extended Resource Settings
-     * usesEncryption: true,
-     * resourceName: openmrs.person
-     * primaryKey : "uuid"
-     * queryFields : all (for now)
+     * storeOffline: false,
      */
     function getResource() {
       v = "custom:(uuid,concept:(uuid,uuid),groupMembers,value:ref)";
@@ -397,8 +434,8 @@ openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings','D
       var o;
       for (var i in obsToUpdate) {
         o = obsToUpdate[i];
-        console.log('updating obs: ' + angular.toJson(o));
         if (o.value !== undefined && o.value !== "") {
+          console.log('updating obs: ' + angular.toJson(o));
           ObsService.update(o.uuid, o.value, callback);
         }
         else ObsService.remove(o.uuid, callback);
@@ -436,16 +473,19 @@ openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettin
   function ($http, $resource,OpenmrsSettings,dataMgr) {
     var EncounterService = {}, Encounter;
     var r, resourceName = "openmrs.encounter";
+
+
     /*
      * Extended Resource Settings
-     * usesEncryption: true,
+     * storeOffline: true,
      * resourceName: openmrs.encounter
+     * usesEncryption: true,
      * primaryKey : "uuid"
      * queryFields : all (for now)
      */
     function getResource() {
       var v = "custom:(uuid,encounterDatetime,patient:(uuid,uuid),form:(uuid,name),location:ref";
-      v += ",encounterType:ref,provider:ref,obs:(uuid,concept:(uuid,uuid),value:ref,groupMembers))";
+      v += ",encounterType:ref,provider:ref,obs:(uuid,concept:ref,value:ref,groupMembers))";
       r = $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/encounter/:uuid",
         {uuid: '@uuid', v: v},
         {query: {method: "GET", isArray: false}}
@@ -453,11 +493,20 @@ openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettin
       return new dataMgr.ExtendedResource(r,true,resourceName,true,"uuid",null);
     }
 
-    EncounterService.get = function (encounterUuid, callback) {
+    EncounterService.get = function (params, callback) {
       Encounter = getResource();
-      Encounter.get(uuid,function (data) {callback(data);});
+      Encounter.get(params,function (data) {callback(data);});
     };
 
+    EncounterService.getServer = function(params,callback) {
+      Encounter = getResource();
+      Encounter.getServer(params,callback);
+    }
+
+    EncounterService.removeLocal = function(encounterUuid) {
+      Encounter = getResource();
+      Encounter.removeLocal(encounterUuid);
+    }
 
     EncounterService.patientQuery = function (params, callback) {
       var v = "custom:(uuid,encounterDatetime,patient:(uuid,uuid),form:(uuid,name),location:ref";
@@ -465,7 +514,7 @@ openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettin
       params.v = v;
       Encounter = getResource();
 
-      Encounter.get(params
+      Encounter.query(params,true
         ,function (data) {callback(data);}
       );
     };
@@ -521,12 +570,12 @@ openmrsServices.factory('LocationService', ['$resource', 'OpenmrsSettings','Data
     var r, resourceName = "openmrs.location";
     /*
      * Extended Resource Settings
+     * storeOffline: true,
+     * resourceName: openmrs.location
      * usesEncryption: false,
-     * resourceName: openmrs.location,
      * primaryKey : "uuid"
-     * queryFields : null=all (for now)
+     * queryFields : all (for now)
      */
-
     function getResource() {
       r = $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/location/:uuid",
         {uuid: '@uuid'},
@@ -535,11 +584,10 @@ openmrsServices.factory('LocationService', ['$resource', 'OpenmrsSettings','Data
       return new dataMgr.ExtendedResource(r,true,resourceName,false,"uuid",null);
     }
 
-    LocationService.query = function (searchString,callback) {
+    LocationService.query = function (params,callback) {
       Location = getResource();
-      Location.query({q:searchString},
-        function (data) { callback(data.results); },
-        function(error) {callback({online:false,error:error});}
+      Location.query(params,true,
+        function (data) { callback(data.results); }
       );
     };
 
@@ -571,14 +619,15 @@ openmrsServices.factory('PersonAttributeService', ['$resource','OpenmrsSettings'
   function ($resource, OpenmrsSettings,dataMgr) {
     var paService = {}, PersonAttribute;
     var r, resourceName = "openmrs.personAttribute";
+
     /*
      * Extended Resource Settings
+     * storeOffline: true,
+     * resourceName: openmrs.personAttribute
      * usesEncryption: true,
-     * resourceName: openmrs.person
      * primaryKey : "uuid"
      * queryFields : all (for now)
      */
-
     function getResource() {
       r = $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/person/:personUuid/attribute/:uuid",
         {},
@@ -590,10 +639,14 @@ openmrsServices.factory('PersonAttributeService', ['$resource','OpenmrsSettings'
     paService.save = function (personUuid, attributeTypeUuid, value, callback) {
       //var pa = new PersonAttribute({attributeType: attributeTypeUuid, value: value});
       PersonAttribute = getResource();
-      PersonAttribute.$resource.$save({personUuid: personUuid},
+
+      PersonAttribute.$resource.save({personUuid: personUuid},
         function (data, status, headers) {
           if (callback) return callback(data);
           else return data;
+        },
+        function(error) {
+          console.log(error);
         }
       );
     };
@@ -608,10 +661,12 @@ openmrsServices.factory('OpenmrsUserService', ['$resource','OpenmrsSettings',
   function ($resource,OpenmrsSettings) {
     var OpenmrsUserService = {},OpenmrsUser;
     var r, resourceName = "openmrs.user";
+
     /*
      * Extended Resource Settings
+     * storeOffline: true,
+     * resourceName: openmrs.user
      * usesEncryption: true,
-     * resourceName: openmrs.person
      * primaryKey : "uuid"
      * queryFields : all (for now)
      */

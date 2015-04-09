@@ -7,16 +7,15 @@ var ngOpenmrsApp = angular.module('ngOpenmrsApp',
     'ui.router',
     'localStorageServices',
     'data-manager',
-    //'ui.bootstrap',
+    'ui.bootstrap',
     'defaulterCohort',
     'openmrs.auth',
     'network-manager',
-
     'openmrs.formentry',
     'openmrs-services-extended',
-    'flex',
     'patientSearch',
     'patientDashboard',
+    'patient-encounter',
     'spinner',
     'layout'
   ]);
@@ -36,56 +35,13 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
       .state('apps', {
         url: "/apps",
         templateUrl: 'views/apps.html',
-        authenticate: true,
-      })
-      .state('patient-search', {
-        url: '/patient-search',
-        templateUrl: 'views/patient-search/patient-search.html',
-        controller: 'PatientSearchCtrl',
-        authenticate: true,
-      })
-      .state('patient', {
-        url: '/patient/:uuid',
-        templateUrl: 'views/patient-dashboard/patient-dashboard.html',
-        controller: 'PatientDashboardCtrl',
-        authenticate: true,
-      })
-
-      .state('defaulter-cohort', {
-        url: "/defaulter-cohort",
-        templateUrl: 'views/defaulter-cohort/defaulter-cohort.html',
-        controller: 'DefaulterCohortCtrl',
-        authenticate: true,
-      })
-      .state('encounter-form', {
-        url: "/encounter-form?formUuid&patientUuid&savedFormId",
-        authenticate: true,
-        templateProvider: function ($stateParams, FormEntryService, $templateFactory) {
-          var template = FormEntryService.getTemplate($stateParams.formUuid);
-          var html = $templateFactory.fromUrl(template);
-          return html;
-        }
-      })
-      .state('encounter-forms-saved', {
-        url: "/encounter-forms-saved",
-        templateUrl: 'views/formentry/encounter-forms-saved.html',
-        authenticate: true,
-      })
-      .state('formentry', {
-        url: "/formentry?encounterUuid&formUuid&patientUuid",
-        authenticate: true,
-        templateProvider: function ($stateParams, FormEntryService, $templateFactory) {
-          var template = FormEntryService.getTemplate($stateParams.formUuid);
-          var html = $templateFactory.fromUrl(template);
-          return html;
-        },
+        authenticate: true
       });
-
 
     $urlRouterProvider.otherwise("/apps");
   }])
-  .run(['$rootScope', '$state', 'Auth', 'OpenmrsFlexSettings', 'DefaulterCohortService', 'FormEntryService', 'NetworkManagerService',
-    function ($rootScope, $state, Auth, OpenmrsFlexSettings, DefaulterCohortService, FormEntryService, NetworkManagerService) {
+  .run(['$rootScope', '$state', 'Auth', 'OpenmrsSettings', 'DefaulterCohortService', 'FormEntryService', 'NetworkManagerService','DataManagerService',
+    function ($rootScope, $state, Auth, OpenmrsSettings, DefaulterCohortService, FormEntryService, NetworkManagerService,DataManagerService) {
       $rootScope.$on("$stateChangeStart", function (event, toState, toParams, fromState, fromParams) {
         if (toState.authenticate && !Auth.isAuthenticated()) {
           $state.transitionTo("login");
@@ -98,7 +54,7 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
       });
 
       NetworkManagerService.init();
-
+      DataManagerService.addOfflineDataService(['OpenmrsSettings','DefaulterCohortService']);
       /*
       $rootScope.servicesWithUserData = ['OpenmrsFlexSettings', 'DefaulterCohortService'];
       OpenmrsFlexSettings.init();

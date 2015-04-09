@@ -1,9 +1,9 @@
 'use strict';
 
-var formEntry = angular.module('openmrs.formentry', ['openmrsServices', 'flex', 'localStorageServices', 'spinner']);
+var formEntry = angular.module('openmrs.formentry');
 
-formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'EncounterService', 'PersonAttributeService', 'ObsService', 'PatientService',
-  function (Auth, local, Flex, EncounterService, PersonAttributeService, ObsService, PatientService) {
+formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService', 'PersonAttributeService', 'ObsService', 'PatientService',
+  function (local, EncounterService, PersonAttributeService, ObsService, PatientService) {
     var FormEntryService = {};
     var pendingSubmissionTable = 'openmrs.formentry.pending-submission';
     var draftsTable = 'openmrs.formentry.drafts';
@@ -81,19 +81,11 @@ formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'En
     };
 
 
-    //If savedFormId provided, return individual form. Otherwrise return all forms.
-    FormEntryService.getDrafts = function (savedFormId) {
-      if (savedFormId) {
-        var form = local.get(draftsTable, savedFormId, Auth.getPassword());
 
-        if (form) return form;
-        else {
-          return null;
-        }
-      }
-      else {
-        return local.getAll(draftsTable, Auth.getPassword());
-      }
+    //If savedFormId provided, return individual form. Otherwrise return all forms.
+    FormEntryService.getDrafts = function (savedFormId,callback) {
+      if (savedFormId) local.get(draftsTable, savedFormId, true,callback)
+      else local.query(draftsTable,null,null,true,callback);
     };
 
 
@@ -116,17 +108,8 @@ formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'En
 
 
     FormEntryService.getPendingSubmission = function (savedFormId, callback) {
-      if (savedFormId) {
-        var form = local.get(pendingSubmissionTable, savedFormId, Auth.getPassword());
-        if (callback) callback(form);
-        else return form;
-      }
-      else {
-        var forms = local.getAll(pendingSubmissionTable, Auth.getPassword());
-        if (callback) callback(forms);
-        else return forms;
-      }
-
+      if (savedFormId) local.get(pendingSubmissionTable, savedFormId, true,callback)
+      else local.query(pendingSubmissionTable,null,null,true,callback);
     }
 
 
@@ -144,7 +127,7 @@ formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'En
       }
       newEncounter.personAttributes = personAttributes;
 
-      local.set(pendingSubmissionTable, newEncounter.savedFormId, newEncounter, Auth.getPassword());
+      local.set(pendingSubmissionTable, newEncounter.savedFormId, newEncounter, true);
     }
 
 
@@ -153,6 +136,7 @@ formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'En
       var restData = getEncounterRestData(form);
       var obsToUpdate = restData.obsToUpdate;
       delete restData.obsToUpdate;
+      console.log(obsToUpdate);
 
       EncounterService.submit(restData, function (data) {
         if (form.savedFormId) FormEntryService.removeFromDrafts(form.savedFormId);
@@ -164,7 +148,7 @@ formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'En
           FormEntryService.saveToPendingSubmission(form);
         }
         else {
-          Flex.remove(EncounterService, form.encounter.uuid);
+          EncounterService.removeLocal(form.encounter.uuid);
           if (form.savedFormId !== undefined) {
             FormEntryService.removeFromPendingSubmission(form.savedFormId);
           }
@@ -266,6 +250,7 @@ formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'En
       for (var i in restAttrs) {
         PersonAttributeService.save(personUuid, restAttrs[i].attributeType, restAttrs[i].value,
           function (data) {
+            console.log("Saved personAttribute");
             console.log(data);
           });
       }
@@ -273,11 +258,13 @@ formEntry.factory('FormEntryService', ['Auth', 'localStorage.utils', 'Flex', 'En
 
       //Update local version of patient to reflect new personAttributes
       form.patient.setAttributes(form.personAttributes);
-      Flex.save(PatientService, personUuid, form.patient, Auth.getPassword());
+      console.log(form.patient);
+      PatientService.saveLocal(personUuid, form.patient);
     }
 
 
     function getEncounterRestData(form) {
+      console.log(form);
       var restObs1 = [], restObs = [], obsToUpdate = [];
       getRestObs(form.obs, restObs, obsToUpdate);
 

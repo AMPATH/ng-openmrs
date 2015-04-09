@@ -131,8 +131,9 @@ localStorageServices.factory('localStorage.utils', [
         catch(e) {
           console.log("item is encrypted, can not covert form json");
         }
-        callback(item);
       }
+      callback(item);
+
     };
 
 
@@ -186,6 +187,8 @@ localStorageServices.factory('localStorage.utils', [
         }
         table[key] = item;
       }
+
+      setTable(tableName,table);
       if(callback) callback(true);
     }
 
@@ -222,22 +225,26 @@ localStorageServices.factory('localStorage.utils', [
       return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
     }
 
+    //If searchString is empty, return all values.
     service.query = function (tableName, queryFields, searchString, usesEncryption,callback) {
       var table = getTable(tableName);
       var item, field, resultSet = [];
-      var re = new RegExp(searchString);
-      searchString = searchString.toLowerCase();
+      //var re = new RegExp(searchString);
+      if(searchString) searchString = searchString.toLowerCase();
+
       for (var i in table) {
         item = table[i];
         if (usesEncryption) {
           item = decrypt(item);
         }
-        if (queryFields) {
-          item = angular.fromJson(item);
+        if(searchString === undefined || searchString === null) {
+          resultSet.push(angular.fromJson(item));
+        }
+        else if (queryFields) {
           for (var j in queryFields) {
             field = queryFields[j];
             if (item.toLowerCase().indexOf(searchString) != -1) {
-              resultSet.push(item);
+              resultSet.push(angular.fromJson(item));
               break;
             }
           }
