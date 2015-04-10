@@ -6,7 +6,7 @@ formEntry.config(['$stateProvider',
   function ($stateProvider) {
     $stateProvider
       .state('formentry', {
-        url: "/formentry?encounterUuid&formUuid&patientUuid",
+        url: "/formentry?encounterUuid&formUuid&patientUuid&savedFormId",
         authenticate: true,
         templateProvider: function ($stateParams, FormEntryService, $templateFactory) {
           var template = FormEntryService.getTemplate($stateParams.formUuid);

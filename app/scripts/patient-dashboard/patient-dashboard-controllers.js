@@ -13,8 +13,8 @@ pd.controller('PatientDashboardCtrl', ['$scope', '$stateParams','$timeout', 'Pat
     $timeout(function () {
       PatientService.get($stateParams.uuid,
         function (data) {
-          var p = PatientService.Patient(data.patientData);
-          $scope.patient = p;
+          console.log(data);
+          $scope.patient = data;
         });
     },1000);
   }]);

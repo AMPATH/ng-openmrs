@@ -3,7 +3,8 @@
 <div ng-controller='FormEntryCtrl'>
   <div class="container-fluid" style="background-color:#f9f9ff;">
     <a class="btn btn-custom btn-lg btn-block" back-button>Back</a>
-
+    {{form.encounter.provider}}<br/>
+    {{form.encounter.location}}<br/>
     <html-form rules='outreachFormRules'>
       <form novalidate class="simple-form" id="outreach_form" name="outreach_form" method='post'>
 

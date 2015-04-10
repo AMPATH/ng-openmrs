@@ -81,6 +81,15 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
     };
 
 
+    FormEntryService.getSavedForm = function(savedFormId,callback) {
+      FormEntryService.getDrafts(savedFormId,function(data) {
+        if(data) callback(data);
+        else {
+          FormEntryService.getPendingSubmission(savedFormId,function(data) {callback(data);});
+        }
+      });
+    }
+
 
     //If savedFormId provided, return individual form. Otherwrise return all forms.
     FormEntryService.getDrafts = function (savedFormId,callback) {
@@ -118,16 +127,54 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
     }
 
 
-    FormEntryService.saveToPendingSubmission = function (newEncounter, personAttributes) {
-      console.log('saveToPendingSubmission()...');
-      console.log(newEncounter);
-      if (!newEncounter.savedFormId) {
-        var s = JSON.stringify(newEncounter);
-        newEncounter.savedFormId = getHashCode(s);
-      }
-      newEncounter.personAttributes = personAttributes;
+    function toRESTStyleObs(obs, obsToLoad) {
+      var o, f = {};
+      for (var i in obs) {
+        o = obs[i];
 
-      local.set(pendingSubmissionTable, newEncounter.savedFormId, newEncounter, true);
+        if (o === null || o.value === null || o.value === undefined) continue;
+        //console.log(o);
+        f = {concept: {uuid: o.concept}};
+        if (o.uuid) f.uuid = o.uuid;
+        if (o.existingValue) f.existingValue = o.existingValue;
+
+        //if(o.obs) console.log('found obs');
+        //if(o.value) console.log('found value');
+        if (o.value) f.value = o.value;
+        else if (o.obs) {
+          f.groupMembers = [];
+          toRESTStyleObs(o.obs, f.groupMembers);
+        }
+        obsToLoad.push(f);
+      }
+    }
+
+    function toRestStyleEncounter(form) {
+      var encounter = {
+        uuid: form.encounter.uuid,
+        patient: {uuid: form.encounter.patient},
+        encounterDatetime: form.encounter.encounterDatetime,
+        encounterType: {uuid:form.encounter.encounterType},
+        location: {uuid:form.encounter.location},
+        provider: {uuid:form.encounter.provider},
+        form: {uuid:form.encounter.form}
+        };
+      var restObs = [];
+      toRESTStyleObs(form.obs,restObs)
+      encounter.obs = restObs;
+      return encounter;
+    }
+
+    FormEntryService.saveToPendingSubmission = function (form) {
+      console.log('saveToPendingSubmission()...');
+      console.log(form);
+      if (!form.savedFormId) {
+        var s = JSON.stringify(form);
+        form.savedFormId = getHashCode(s);
+      }
+      form.encounter = toRestStyleEncounter(form);
+
+      local.set(pendingSubmissionTable, form.savedFormId, form, true);
     }
 
 
@@ -136,11 +183,10 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
       var restData = getEncounterRestData(form);
       var obsToUpdate = restData.obsToUpdate;
       delete restData.obsToUpdate;
-      console.log(obsToUpdate);
 
       EncounterService.submit(restData, function (data) {
         if (form.savedFormId) FormEntryService.removeFromDrafts(form.savedFormId);
-        console.log(data);
+
         if (data === undefined || data === null || data.error) {
           console.log("FormEntryService.submit() : error submitting. Saving to local");
           form.restObs = restData.obs;
@@ -162,6 +208,7 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
         }
         return data;
       });
+
     };
 
 
@@ -228,14 +275,15 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
       var newAttrs = form.personAttributes;
       var restAttrs = [];
       var personUuid = form.patient.getUuid();
-      var shouldPush, type;
-
+      var shouldPush, type,uuid,attr,params;
       for (var attrTypeUuid in newAttrs) {
+        uuid = null;
         if (attrTypeUuid === "oldPersonAttributes") continue;
         shouldPush = true;
         for (var i in oldAttrs) {
           type = oldAttrs[i].attributeType.uuid;
           if (attrTypeUuid === type) {
+            uuid = oldAttrs[i].uuid;
             //if the value has not changed, do not resubmit it
             if (newAttrs[attrTypeUuid] === oldAttrs[i].value) {
               console.log('attribute has not changed');
@@ -244,22 +292,32 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
             break;
           }
         }
-        if (shouldPush) restAttrs.push({attributeType: attrTypeUuid, value: newAttrs[attrTypeUuid]});
+        if (shouldPush) {
+          params = {personUuid:personUuid,value: newAttrs[attrTypeUuid],attributeType:attrTypeUuid};
+          /*
+          if(uuid) params["uuid"] = uuid;
+          else params["attributeType"] = attrTypeUuid;
+          */
+          restAttrs.push(params);
+        }
       }
 
       for (var i in restAttrs) {
-        PersonAttributeService.save(personUuid, restAttrs[i].attributeType, restAttrs[i].value,
+        params = restAttrs[i];
+        console.log(params);
+        PersonAttributeService.save(params,
           function (data) {
             console.log("Saved personAttribute");
-            console.log(data);
           });
       }
 
 
       //Update local version of patient to reflect new personAttributes
-      form.patient.setAttributes(form.personAttributes);
-      console.log(form.patient);
-      PatientService.saveLocal(personUuid, form.patient);
+      if(restAttrs) {
+        form.patient.setAttributes(form.personAttributes);
+        console.log(form.patient);
+        PatientService.saveLocal(personUuid, form.patient.patientData);
+      }
     }
 
 

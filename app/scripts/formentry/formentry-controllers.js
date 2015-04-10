@@ -63,31 +63,31 @@ formEntry.controller('FormEntryCtrl', ['$scope', '$stateParams', 'EncounterServi
 
     if ($stateParams.savedFormId) { //loading a saved form
       console.log("loading saved form");
-      FormEntryService.getDrafts($stateParams.savedFormId,
+      FormEntryService.getSavedForm($stateParams.savedFormId,
         function (savedForm) {
-          if (savedForm) $scope.form = savedForm;
-          else {
-            FormEntryService.getPendingSubmission($stateParams.savedFormId,
-              function (savedForm) {
-                console.log(savedForm);
-                $scope.form = savedForm;
-              }
-            );
+          console.log(savedForm);
+          if (savedForm) {
+            $scope.form = {personAttributes: savedForm.personAttributes};
+            $scope.existingEncounter = savedForm.encounter;
           }
         }
       )
     }
-    else if ($stateParams.encounterUuid) { //loading a form for an encounter on the server
+    else if ($stateParams.encounterUuid) { //loading a form for an existing encounter
       console.log('loading existing form');
       $scope.encounterUuid = $stateParams.encounterUuid;
       var params = {uuid:$stateParams.encounterUuid};
       console.log(params);
       EncounterService.get(params, function (data) {
-        console.log(data);
-        if("obs" in data)
+        if ("obs" in data) {
+          console.log(data);
           $scope.existingEncounter = data;
+        }
         else {
-          EncounterService.getServer(params,function(data){$scope.existingEncounter = data;});
+          EncounterService.getServer(params,function(data){
+            $scope.existingEncounter = data;
+            console.log(data);
+          });
         }
 
       });

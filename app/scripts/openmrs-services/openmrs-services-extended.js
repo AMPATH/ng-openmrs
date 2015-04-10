@@ -344,7 +344,6 @@ openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings
 
       PatientRes.get({uuid:patientUuid},
         function (data) {
-          console.log(data);
           var d = new Patient(data);
           callback(d);
         }
@@ -407,20 +406,29 @@ openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings','D
      * Extended Resource Settings
      * storeOffline: false,
      */
-    function getResource() {
+    function getResource(noV) {
       v = "custom:(uuid,concept:(uuid,uuid),groupMembers,value:ref)";
-      url = OpenmrsSettings.getContext() + 'ws/rest/v1/obs/:uuid';
-      r = $resource(url,
-        {uuid: '@uuid', v: v},
-        {query: {method: "GET", isArray: false}}
-      )
+      url = OpenmrsSettings.getContext() + '/ws/rest/v1/obs/:uuid';
+      if(noV) {
+        r = $resource(url,
+          {uuid: '@uuid'},
+          {query: {method: "GET", isArray: false}}
+        );
+      }
+      else {
+        r = $resource(url,
+          {uuid: '@uuid',v:v},
+          {query: {method: "GET", isArray: false}}
+        );
+
+      }
       return new dataMgr.ExtendedResource(r,false);
     }
 
 
     ObsService.update = function (obsUuid, value, callback) {
       //var o = new Obs({uuid: obsUuid, value: value});
-      Obs = getResource(url);
+      Obs = getResource(true);
       Obs.save({uuid: obsUuid, value: value},
         function (data) {callback(data);}
       );
@@ -455,13 +463,13 @@ openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings','D
 
     ObsService.remove = function (obsUuid, callback) {
       Obs = getResource();
-      Obs.remove(obsUuid,function (data) { callback(data); });
+      Obs.remove({uuid:obsUuid},function (data) { callback(data); });
     }
 
     ObsService.voidObs = function (obsToVoid, callback) {
       for (var i in obsToVoid) {
         var uuid = obsToVoid[i];
-        ObsService.remove(uuid, callback);
+        ObsService.remove({uuid:uuid}, callback);
       }
     }
 
@@ -605,42 +613,29 @@ openmrsServices.factory('Concept', ['$resource','OpenmrsSettings',
   }]);
 
 
-openmrsServices.factory('PersonAttribute', ['$resource','OpenmrsSettings',
-  function ($resource,OpenmrsSettings) {
-    return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/person/:personUuid/attribute/:uuid", {},
-      {
-        query: {method: "GET", isArray: false},
-      }
-    );
-  }]);
 
-
-openmrsServices.factory('PersonAttributeService', ['$resource','OpenmrsSettings','DataManagerService',
-  function ($resource, OpenmrsSettings,dataMgr) {
+openmrsServices.factory('PersonAttributeService', ['$resource','OpenmrsSettings','DataManagerService','$http',
+  function ($resource, OpenmrsSettings,dataMgr,$http) {
     var paService = {}, PersonAttribute;
-    var r, resourceName = "openmrs.personAttribute";
+    var r;
 
     /*
      * Extended Resource Settings
-     * storeOffline: true,
-     * resourceName: openmrs.personAttribute
-     * usesEncryption: true,
-     * primaryKey : "uuid"
-     * queryFields : all (for now)
+     * storeOffline: false,
      */
-    function getResource() {
-      r = $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/person/:personUuid/attribute/:uuid",
-        {},
+    function getResource(personUuid) {
+      r = $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/person/" + personUuid + "/attribute/:uuid",
+        {uuid:'@uuid'},
         {query: {method: "GET", isArray: false}}
       );
       return new dataMgr.ExtendedResource(r,false);
     }
 
-    paService.save = function (personUuid, attributeTypeUuid, value, callback) {
-      //var pa = new PersonAttribute({attributeType: attributeTypeUuid, value: value});
-      PersonAttribute = getResource();
+    paService.save = function (params, callback) {
+      PersonAttribute = getResource(params.personUuid);
+      delete params.personUuid;
 
-      PersonAttribute.$resource.save({personUuid: personUuid},
+      PersonAttribute.$resource.save(params,
         function (data, status, headers) {
           if (callback) return callback(data);
           else return data;
@@ -649,6 +644,7 @@ openmrsServices.factory('PersonAttributeService', ['$resource','OpenmrsSettings'
           console.log(error);
         }
       );
+
     };
 
     return paService;

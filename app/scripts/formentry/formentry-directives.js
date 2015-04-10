@@ -183,6 +183,7 @@ formEntry
 
           scope.$watch('existingEncounter', function (existingEncounter, oldValue) {
             if (existingEncounter !== undefined && existingEncounter !== null && existingEncounter !== "") {
+              console.log(scope.form);
               loadExistingEncounter(existingEncounter);
             }
           });
@@ -370,6 +371,7 @@ formEntry
                 if (o.concept.uuid !== conceptUuid) continue;
                 if (checkboxValue && elem.find("input").attr("value") !== value) continue;
                 if (o.isLoaded) continue;
+                console.log('found obs');
 
                 lineage = this.attributes['lineage'].value;
                 model = $parse(lineage)(formScope);
@@ -400,29 +402,6 @@ formEntry
             });
           }
 
-          //This converts an angular formentry represetnation of obs to the openmrs rest ws version.
-          //The loadObs() function requires the obs to be in the same format as the openmrs rest object.
-          function toRESTStyleObs(obs, obsToLoad) {
-            var o, f = {};
-            for (var i in obs) {
-              o = obs[i];
-
-              if (o === null || o.value === null || o.value === undefined) continue;
-              //console.log(o);
-              f = {concept: {uuid: o.concept}};
-              if (o.uuid) f.uuid = o.uuid;
-              if (o.existingValue) f.existingValue = o.existingValue;
-
-              //if(o.obs) console.log('found obs');
-              //if(o.value) console.log('found value');
-              if (o.value) f.value = o.value;
-              else if (o.obs) {
-                f.groupMembers = [];
-                loadSavedObs(o.obs, f.groupMembers);
-              }
-              obsToLoad.push(f);
-            }
-          }
 
           scope.$watch('selected', function (newValue, oldValue) {
 
@@ -433,12 +412,15 @@ formEntry
             setValue(newValue);
           });
 
+          /*
           scope.$watch(lineage,function(newValue,oldValue) {
+              console.log('setting lineage');
               if(newValue) {
                 setValue(newValue);
               }
             }
           )
+          */
 
 
           //Only watch for first level obs/obsgroups. Any obsgroups will be filled when the parent obs is loaded.

@@ -21,7 +21,8 @@ dc.controller('DefaulterCohortCtrl', ['$scope', '$http', 'Auth', 'DefaulterCohor
       6: 'Untraceable'
     };
 
-    $scope.outreachProviders = DefaulterCohortService.getOutreachProviders();
+
+    DefaulterCohortService.getOutreachProviders(function(providers) {$scope.outreachProviders = providers});
     //Get defaulter cohort if one exists in session
 
     function setNumRetired() {

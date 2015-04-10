@@ -96,17 +96,16 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
         local.remove(this.tableName, key, callback);
       }
 
-      this.removeServer = function(key,callback) {
-        var primaryKey = this.primaryKey;
-        this.$resource.delete({primaryKey:key}
+      this.removeServer = function(params,callback) {
+        this.$resource.delete(params
           ,function(data) {callback(data);}
           ,function(error) {callback(error);}
         );
       };
 
-      this.remove = function(key,callback) {
-        if(this.storeOffline) this.removeLocal(key,callback);
-        this.removeServer(key,callback);
+      this.remove = function(params,callback) {
+        if(this.storeOffline) this.removeLocal(params[that.primaryKey],callback);
+        this.removeServer(params,callback);
       }
 
 
@@ -116,10 +115,10 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
       }
 
       this.save = function(params,callback) {
-        this.$resource.$save(
-          {uuid: obsUuid, value: value}
+        that.$resource.save(
+          params
           ,function (data) {callback(data);}
-          ,function(error) {callback({online:false,error:error});})
+          ,function(error) {callback({error:error});})
       }
 
     }
