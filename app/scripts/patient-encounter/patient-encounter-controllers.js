@@ -17,7 +17,9 @@ pd.controller('PatientEncounterCtrl', ['$scope', '$stateParams','PatientService'
         if(data.obs) $scope.encounter = data;
         else {
           EncounterService.getServer(params,function(data) {
+
             $scope.encounter = data;
+
             console.log(data);
           });
         }

@@ -117,7 +117,6 @@ localStorageServices.factory('localStorage.utils', [
      Returns null if key not in table
      */
     service.get = function (tableName, key, usesEncryption, callback) {
-      console.log('LocalStorageServices.get() : table: ' + tableName + " key: " + key);
       var table = getTable(tableName);
       var item = null;
       if (key in table) {

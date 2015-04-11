@@ -4,7 +4,7 @@
 var openmrsSettings = angular.module('openmrs-settings',['localStorageServices']);
 
 openmrsSettings.factory('OpenmrsSettings', ['$injector','localStorage.utils',
-  function ($injector,local) {
+  function ($injector,local,FormEntryService) {
     var settings = {};
 
     settings.context = "https://amrs.ampath.or.ke:8443/amrs";
@@ -24,10 +24,10 @@ openmrsSettings.factory('OpenmrsSettings', ['$injector','localStorage.utils',
 
     settings.setContext = function(url) {
       settings.context = url;
-      console.log(url);
+      //console.log(url);
       var Auth = $injector.get("Auth");
       Auth.authenticateOpenmrsContext(function(authenticated) {
-        console.log('authenticated: ' + authenticated);
+        //console.log('authenticated: ' + authenticated);
       })
       if(settings.contextOptions.indexOf(url) === -1) settings.addContext(url);
     }
@@ -39,33 +39,6 @@ openmrsSettings.factory('OpenmrsSettings', ['$injector','localStorage.utils',
     settings.init = function () {
       var tables = ['openmrs.patient', 'expiration', 'openmrs.provider', 'openmrs.location', 'openmrs.encounter','openmrs.users','openmrs.settings'];
       local.init(tables);
-      FormEntryService.init();
-    }
-
-    settings.changeUser = function(prevUsername, curUsername) {
-      FormEntryService.changeUser(prevUsername,curUsername);
-      var tables = ['openmrs.patient','openmrs.encounter'];
-      local.reset(tables);
-    }
-
-    settings.saveUserData = function(username,tables) {
-      var savedUserData = {}, t;
-      for(var i in tables) {
-        t = local.getTable(tables[i]);
-        if(Object.keys(t).length > 0) savedUserData[tables[i]] = t;
-      }
-      if(Object.keys(savedUserData).length > 0)
-        local.set('openmrs.saved-user-data', username, savedUserData);
-      local.reset(tables);
-    }
-
-    settings.loadUserData = function(username,tables) {
-      var userData = local.get('openmrs.saved-user-data',username);
-
-      for(var tableName in userData) {
-        local.setTable(tableName,userData[tableName]);
-      }
-      local.remove('openmrs.formentry.saved-user-data', username);
     }
 
     return settings;
@@ -123,10 +96,8 @@ openmrsServices.factory('OpenmrsSessionService', ['$resource','OpenmrsSettings',
 
     service.getSession = function (callback) {
       OpenmrsSession = getResource();
-      console.log(OpenmrsSession);
       return OpenmrsSession.get({}
         ,function (data, status, headers) {
-          console.log(data);
           data.online = true;
           callback(data);
         }
@@ -294,11 +265,9 @@ Patient.prototype.setAttributes = function (newAttributes) {
     value = newAttributes[attrTypeUuid];
     restAttr = {attributeType: {uuid: attrTypeUuid}, value: value};
     found = false;
-    console.log('finding: ' + attrTypeUuid);
     for (var j in existingAttrs) {
       attr = existingAttrs[j];
       if (attr.attributeType.uuid === attrTypeUuid) {
-        console.log('found attribute, resetting to new value');
         found = true;
         existingAttrs[j] = restAttr;
         break;
@@ -339,16 +308,24 @@ openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings
     }
 
 
-    PatientService.get = function (patientUuid, callback) {
+    PatientService.get = function (params, callback) {
       PatientRes = getResource();
 
-      PatientRes.get({uuid:patientUuid},
+      PatientRes.get(params,
         function (data) {
           var d = new Patient(data);
           callback(d);
         }
       );
     };
+
+    PatientService.getLocal = function(patientUuid,callback) {
+      PatientRes = getResource();
+      PatientRes.getLocal(patientUuid,function(data) {
+        if(data) {data = new Patient(data);}
+        callback(data);
+      });
+    }
 
     PatientService.query = function(params,callback) {
       PatientRes = getResource();
@@ -443,7 +420,7 @@ openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings','D
       for (var i in obsToUpdate) {
         o = obsToUpdate[i];
         if (o.value !== undefined && o.value !== "") {
-          console.log('updating obs: ' + angular.toJson(o));
+          //console.log('updating obs: ' + angular.toJson(o));
           ObsService.update(o.uuid, o.value, callback);
         }
         else ObsService.remove(o.uuid, callback);
@@ -477,8 +454,8 @@ openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings','D
   }]);
 
 
-openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettings','DataManagerService',
-  function ($http, $resource,OpenmrsSettings,dataMgr) {
+openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettings','DataManagerService','PatientService',
+  function ($http, $resource,OpenmrsSettings,dataMgr,PatientService) {
     var EncounterService = {}, Encounter;
     var r, resourceName = "openmrs.encounter";
 
@@ -521,7 +498,6 @@ openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettin
       v += ",encounterType:ref,provider:ref)";
       params.v = v;
       Encounter = getResource();
-
       Encounter.query(params,true
         ,function (data) {callback(data);}
       );
@@ -530,9 +506,19 @@ openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettin
     //May be better to have one function patientQuery where calling function specifies as
     //a parameter if obs should be included
     EncounterService.patientQueryWithObs = function (params, callback) {
-      Encounter.get(params,
-        function (data) { callback(data);}
-      );
+      Encounter = getResource();
+      PatientService.getLocal(params.patient,function(patient) {
+        Encounter.query(params, true,
+          function (data) {
+            var uuids = patient.patientData.encounters || [];
+            console.log(uuids);
+            _.each(data.results,function(item) {uuids.push(item.uuid);});
+            callback(data);
+            patient.patientData.encounters = _.uniq(uuids);
+            PatientService.saveLocal(params.patient,patient.patientData);
+          }
+        );
+      });
     };
 
 

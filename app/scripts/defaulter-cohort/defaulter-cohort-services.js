@@ -28,7 +28,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
     DefaulterCohortService.init = function () {
       var tables = ["defaulter-cohort", "defaulter-cohorts", "outreach-providers"];
       local.init(tables);
-      DefaulterCohortService.getOutreachProviders();
+      DefaulterCohortService.getOutreachProviders(function(providers) {});
     };
 
     DefaulterCohortService.changeUser = function (prevUsername,curUsername) {
@@ -101,10 +101,11 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
           console.log("getting defaulter cohorts from server");
           $http.get(DEFAULTER_COHORT_CONTEXT + '/outreach/ajax_get_defaulter_cohorts').success(function (data) {
             //alert('success getting data from dc server');
-            local.setAll("defaulter-cohorts", data, function (dc) {
-              if (dc.uuid !== "0") return dc.uuid;
-              else return dc.id;
-            });
+            local.setAll("defaulter-cohorts", data, function(item) {return item.uuid;},false,
+              function (dc) {
+                if (dc.uuid !== "0") return dc.uuid;
+                else return dc.id;
+              });
             callback(data);
           }).error(function (error, status) {
             alert('error');
@@ -163,9 +164,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
           if (providers === undefined || providers === null || Object.keys(providers).length == 0) {
             console.log('Getting outreach providers from server');
             $http.get(url).success(function (data) {
-              local.setAll("outreach-providers", data, function (p) {
-                return p.uuid;
-              });
+              local.setAll("outreach-providers", data, function (p) { return p.uuid;},false,function(data){});
               providers = data;
               if (callback) callback(providers);
             }).error(function (error) {

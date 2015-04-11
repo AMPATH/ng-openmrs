@@ -11,9 +11,8 @@ pd.controller('PatientDashboardCtrl', ['$scope', '$stateParams','$timeout', 'Pat
     $scope.p = null;
 
     $timeout(function () {
-      PatientService.get($stateParams.uuid,
+      PatientService.get({uuid:$stateParams.uuid},
         function (data) {
-          console.log(data);
           $scope.patient = data;
         });
     },1000);

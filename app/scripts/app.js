@@ -17,7 +17,8 @@ var ngOpenmrsApp = angular.module('ngOpenmrsApp',
     'patient-dashboard',
     'patient-encounter',
     'spinner',
-    'layout'
+    'layout',
+    'underscore'
   ]);
 
 ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
@@ -54,7 +55,11 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
       });
 
       NetworkManagerService.init();
+      OpenmrsSettings.init();
+      FormEntryService.init();
+      DefaulterCohortService.init();
       DataManagerService.addOfflineDataService(['OpenmrsSettings','DefaulterCohortService']);
+
       /*
       $rootScope.servicesWithUserData = ['OpenmrsFlexSettings', 'DefaulterCohortService'];
       OpenmrsFlexSettings.init();

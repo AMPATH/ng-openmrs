@@ -36,7 +36,6 @@ mod.factory('NetworkManagerService', ['$rootScope','$interval','$timeout',
       $(appCache).bind(
         "noupdate cached downloading",
         function (event) {
-          console.log('Success retrieving appcache. User online.')
           networkMgr.online = true;
           console.log("User is online: " + new Date().toISOString());
           networkMgr.restartTimer(defaultInterval, networkMgr.checkOnlineStatus);
@@ -66,9 +65,8 @@ mod.factory('NetworkManagerService', ['$rootScope','$interval','$timeout',
       appCache.update();
     };
 
+
     networkMgr.isOnline = function() {
-      networkMgr.checkOnlineStatus();
-      $timeout(function() {},1500);
       return networkMgr.online;
     }
 
