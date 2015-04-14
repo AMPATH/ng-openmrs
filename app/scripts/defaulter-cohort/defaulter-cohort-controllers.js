@@ -50,13 +50,13 @@ dc.controller('DefaulterCohortCtrl', ['$scope', '$http', 'Auth', 'DefaulterCohor
           alert("You must be online to download this cohort.")
           return;
         }
-        //console.log(data);
+        console.log(data);
         $scope.defaulterCohort = data;
 
         if (data.uuid != $scope.defaulterCohortUuid) {
           DefaulterCohortService.getDefaulterCohorts(function (cohorts) {
             $scope.defaulterCohorts = cohorts;
-            $scope.defaulterCohortUuid = data.uuid
+            $scope.defaulterCohortUuid = data.uuid;
           });
         }
         setNumRetired();

@@ -7,6 +7,8 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
     var dataManagerService = {};
     var offlineDataServices = [];
 
+    dataManagerService.getAmountStored = function() {return localStorageService.getAmountStored();}
+
     dataManagerService.ExtendedResource = function ($resource, storeOffline, tableName, usesEncryption, primaryKey, queryFields) {
       var that = this;
       this.$resource = $resource;
@@ -125,11 +127,12 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
 
 
     dataManagerService.addOfflineDataService = function(serviceNames) {
-      offlineDataServices.concat(serviceNames);
+      offlineDataServices = offlineDataServices.concat(serviceNames);
     }
 
     dataManagerService.changeUser = function(prevUsername,curUsername) {
       var service;
+      console.log(offlineDataServices);
       for (var i in offlineDataServices) {
         service = $injector.get(offlineDataServices[i]);
         service.changeUser(prevUsername, curUsername);

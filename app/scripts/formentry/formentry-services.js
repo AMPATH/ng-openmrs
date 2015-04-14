@@ -29,17 +29,17 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
     }
 
     FormEntryService.loadUserData = function(username) {
-      var userData = local.get('openmrs.formentry.saved-user-data',username);
-      console.log(userData);
-      if(userData) {
-        if(userData['openmrs.formentry.pending-submission'])
-          local.setTable('openmrs.formentry.pending-submission', userData['openmrs.formentry.pending-submission']);
-
-        if(userData['openmrs.formentry.drafts'])
-          local.setTable('openmrs.formentry.drafts', userData['openmrs.formentry.drafts']);
-
-        local.remove('openmrs.formentry.saved-user-data', username);
-      }
+      local.get('openmrs.formentry.saved-user-data',username,false,
+        function(userData) {
+          console.log(userData);
+          if(userData) {
+            if (userData['openmrs.formentry.pending-submission'])
+              local.setTable('openmrs.formentry.pending-submission', userData['openmrs.formentry.pending-submission']);
+            if (userData['openmrs.formentry.drafts'])
+              local.setTable('openmrs.formentry.drafts', userData['openmrs.formentry.drafts']);
+            local.remove('openmrs.formentry.saved-user-data', username);
+          }
+        });
     }
 
     FormEntryService.changeUser = function (prevUser,curUser) {

@@ -30,8 +30,10 @@ layout.controller('HeaderCtrl',['$scope','$rootScope','$interval','NetworkManage
 
   }]);
 
-layout.controller('FooterCtrl',['$scope','OpenmrsSettings',
-  function($scope,OpenmrsSettings) {
+layout.controller('FooterCtrl',['$scope','OpenmrsSettings','DataManagerService',
+  function($scope,OpenmrsSettings,dataMgr) {
+
+    $scope.amountStored = dataMgr.getAmountStored();
 
     $scope.openmrsContext = OpenmrsSettings.getContext();
     $scope.openmrsContextOptions = OpenmrsSettings.getContextOptions();
@@ -43,6 +45,10 @@ layout.controller('FooterCtrl',['$scope','OpenmrsSettings',
     $scope.$watch('openmrsContext',function(newUrl) {
       $scope.setOpenmrsContext(newUrl);
     })
+
+    $scope.updateAmountStored = function() {
+      $scope.amountStored = dataMgr.getAmountStored();
+    }
 
 
 

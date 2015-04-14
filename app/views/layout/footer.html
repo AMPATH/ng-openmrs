@@ -2,6 +2,8 @@
     <div class="container-fluid header">
       <div class="navbar-header">
         Openmrs Context : <select ng-options="o as o for o in openmrsContextOptions" ng-model="openmrsContext"></select>
+        Storage Used: {{amountStored}} MB (<a ng-click="updateAmountStored()">Update</a>)
       </div>
+
     </div>
 </div>

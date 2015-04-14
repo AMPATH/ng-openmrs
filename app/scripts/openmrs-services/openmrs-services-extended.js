@@ -41,6 +41,11 @@ openmrsSettings.factory('OpenmrsSettings', ['$injector','localStorage.utils',
       local.init(tables);
     }
 
+    settings.changeUser = function() {
+      console.log('openmrs: changing user');
+      local.reset(['openmrs.patient','openmrs.encounter']);
+    }
+
     return settings;
   }]);
 
@@ -98,8 +103,12 @@ openmrsServices.factory('OpenmrsSessionService', ['$resource','OpenmrsSettings',
       OpenmrsSession = getResource();
       return OpenmrsSession.get({}
         ,function (data, status, headers) {
-          data.online = true;
           callback(data);
+        },
+        function(error) {
+          console.log('error');
+          var error = {error: true, result: error};
+          callback(error);
         }
       );
     };

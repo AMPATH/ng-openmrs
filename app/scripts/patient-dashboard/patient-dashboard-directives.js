@@ -4,8 +4,8 @@
 
 
 angular.module('patient-dashboard')
-  .directive('encountersPane', ['$state', 'EncounterService', 'OpenmrsUtilityService','NetworkManagerService',
-    function ($state, EncounterService, OpenmrsUtilityService,networkMgr) {
+  .directive('encountersPane', ['$state', 'EncounterService', 'OpenmrsUtilityService','NetworkManagerService','PatientService',
+    function ($state, EncounterService, OpenmrsUtilityService,networkMgr,PatientService) {
       return {
         restrict: "E",
         scope: {
@@ -48,7 +48,7 @@ angular.module('patient-dashboard')
             var params = {startIndex: scope.nextStartIndex, patient: scope.patientUuid, limit: 20};
 
             if(networkMgr.isOnline()) {
-              EncounterService.patientQueryWithObs(params, function (data) {
+              EncounterService.patientQuery(params, function (data) {
                 scope.nextStartIndex = OpenmrsUtilityService.getStartIndex(data);
                 for (var e in data.results) {
                   scope.encounters.push(data.results[e]);
@@ -61,8 +61,17 @@ angular.module('patient-dashboard')
             }
             else {
               PatientService.get({uuid: scope.patientUuid}, function (patient) {
-                if (patient.encounters) scope.encounters = patient.encounters;
-                scope.allDataLoaded = true;
+                console.log(patient);
+                if (patient.patientData.encounters) {
+                  _.each(patient.patientData.encounters,
+                    function (uuid) {
+                      EncounterService.get({uuid: uuid}, function (e) {
+                        scope.encounters.push(e);
+                      });
+                    }
+                  );
+                  scope.allDataLoaded = true;
+                }
               });
             }
           }
@@ -70,26 +79,27 @@ angular.module('patient-dashboard')
         templateUrl: "views/patient-dashboard/encountersPane.html",
       }
     }])
-  .directive('formsPane', ['FormEntryService', function (FormEntryService) {
-    return {
-      restrict: "E",
-      scope: {patientUuid: "@",},
-      controller: function ($scope) {
-        $scope.forms = FormEntryService.getForms();
-      },
-      link: function (scope, element, attrs) {
+  .directive('formsPane', ['FormEntryService',
+    function (FormEntryService) {
+      return {
+        restrict: "E",
+        scope: {patientUuid: "@",},
+        controller: function ($scope) {
+          $scope.forms = FormEntryService.getForms();
+        },
+        link: function (scope, element, attrs) {
 
-        /*
+          /*
          attrs.$observe('patientUuid',function(newVal,oldVal) {
          if(newVal && newVal != "") {
          scope.patientUuid = newVal;
          }
          });
          */
-      },
-      templateUrl: "views/patient-dashboard/formsPane.html",
-    }
-  }])
+        },
+        templateUrl: "views/patient-dashboard/formsPane.html",
+      }
+    }])
   .directive("dataPane",['EncounterService',
     function(EncounterService) {
       return {

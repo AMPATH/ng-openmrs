@@ -155,7 +155,7 @@ auth.factory('Auth',
         if (NetworkManagerService.isOnline() === true) {
           console.log('Auth.authenticateRemote() : authenticate on server');
           OpenmrsSessionService.getSession(function (data) {
-            if (data.error) Auth.authenticateLocal(username, password, callback);
+            if (data.error || data.data === null) Auth.authenticateLocal(username, password, callback);
             else if (data.authenticated) {
               Auth.setAuthType('remote');
               Auth.setAuthenticated(true);
@@ -205,6 +205,7 @@ auth.factory('Auth',
             verifyLocalUser(curUsername, password,
               function (doesMatch) {
                 if (doesMatch === undefined || doesMatch === false || prevUsername != curUsername) { //user does not exist or password has changed
+                  console.log("Changing user...");
                   setLocalUser(curUsername, password);
                   dataMgr.changeUser(prevUsername,curUsername);
                   local.set('openmrs.settings', 'prevUsername', curUsername);

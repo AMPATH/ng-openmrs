@@ -62,8 +62,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
               memberUuids.push(patients[i].uuid);
             }
             DefaulterCohortService.getMemberData(memberUuids);
-            if (callback) return callback(result);
-            else return result;
+            if (callback) return callback(result.defaulter_cohort);
           }, function (error) {
             callback({online: false, error: error});
           });

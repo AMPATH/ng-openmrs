@@ -8,6 +8,12 @@ localStorageServices.factory('localStorage.utils', [
     var service = {};
     var encryptionPassword;
 
+    service.getAmountStored = function() {
+      var size = angular.toJson(localStorage).length;
+      console.log(size);
+      return (size/1024/1024).toFixed(2);
+    }
+
     service.setPassword = function(password) {
       encryptionPassword = password;
     }
@@ -184,7 +190,8 @@ localStorageServices.factory('localStorage.utils', [
         if (usesEncryption) {
           item = encrypt(item);
         }
-        table[key] = item;
+        if(key in table) continue;
+        else table[key] = item;
       }
 
       setTable(tableName,table);
@@ -216,7 +223,7 @@ localStorageServices.factory('localStorage.utils', [
 
     service.setTable = function(tableName,table,callback) {
       localStorage.setItem(tableName,angular.toJson(table));
-      callback(true);
+      if(callback) callback(true);
     }
 
 
