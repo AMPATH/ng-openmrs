@@ -1,6 +1,6 @@
 'use strict';
 
-var mod = angular.module('defaulter-cohort', ['ngResource', 'ngCookies', 'openmrs-services-extended', 'spinner', 'localStorageServices']);
+var mod = angular.module('defaulter-cohort', ['ngResource', 'openmrs-services-extended', 'spinner', 'localStorageServices','data-manager']);
 
 mod.config(['$stateProvider',
   function ($stateProvider) {
@@ -10,5 +10,12 @@ mod.config(['$stateProvider',
         templateUrl: 'views/defaulter-cohort/defaulter-cohort.html',
         controller: 'DefaulterCohortCtrl',
         authenticate: true,
-      })
-  }]);
+      });
+  }])
+  .run(['DefaulterCohortService','DataManagerService',
+    function(DefaulterCohortService,dataMgr) {
+      DefaulterCohortService.init();
+      dataMgr.addOfflineDataService(['DefaulterCohortService']);
+    }
+  ])
+;

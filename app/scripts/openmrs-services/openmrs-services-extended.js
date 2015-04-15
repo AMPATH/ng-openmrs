@@ -1,7 +1,15 @@
 'use strict';
 
 
-var openmrsSettings = angular.module('openmrs-settings',['localStorageServices']);
+var openmrsSettings = angular.module('openmrs-settings',['localStorageServices','data-manager']);
+
+openmrsSettings
+  .run(['OpenmrsSettings','DataManagerService',
+    function(OpenmrsSettings,dataMgr) {
+      OpenmrsSettings.init();
+      dataMgr.addOfflineDataService('OpenmrsSettings');
+    }
+  ]);
 
 openmrsSettings.factory('OpenmrsSettings', ['$injector','localStorage.utils',
   function ($injector,local,FormEntryService) {

@@ -53,11 +53,4 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
         }
 
       });
-
-      NetworkManagerService.init();
-      OpenmrsSettings.init();
-      FormEntryService.init();
-      DefaulterCohortService.init();
-      DataManagerService.addOfflineDataService(['OpenmrsSettings','DefaulterCohortService','FormEntryService']);
-
     }]);

@@ -2,7 +2,9 @@
  * Created by Jonathan on 3/31/2015.
  */
 
-var mod = angular.module('network-manager', []);
+'use strict';
+
+var mod = angular.module('network-manager');
 
 mod.factory('NetworkManagerService', ['$rootScope','$interval','$timeout',
   function($rootScope,$interval,$timeout) {

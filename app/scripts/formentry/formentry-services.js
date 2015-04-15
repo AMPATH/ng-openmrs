@@ -2,8 +2,8 @@
 
 var formEntry = angular.module('openmrs-formentry');
 
-formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService', 'PersonAttributeService', 'ObsService', 'PatientService',
-  function (local, EncounterService, PersonAttributeService, ObsService, PatientService) {
+formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService', 'PersonAttributeService', 'ObsService', 'PatientService','NetworkManagerService',
+  function (local, EncounterService, PersonAttributeService, ObsService, PatientService,NetworkManagerService) {
     var FormEntryService = {};
     var pendingSubmissionTable = 'openmrs.formentry.pending-submission';
     var draftsTable = 'openmrs.formentry.drafts';
@@ -183,6 +183,13 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
       var restData = getEncounterRestData(form);
       var obsToUpdate = restData.obsToUpdate;
       delete restData.obsToUpdate;
+
+      if(!NetworkManagerService.isOnline()) {
+        form.restObs = restData.obs;
+        form.obsToUpdate = obsToUpdate;
+        FormEntryService.saveToPendingSubmission(form);
+        return;
+      }
 
       EncounterService.submit(restData, function (data) {
         if (form.savedFormId) FormEntryService.removeFromDrafts(form.savedFormId);
