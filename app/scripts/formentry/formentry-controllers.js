@@ -9,7 +9,7 @@ formEntry.controller('SavedFormsCtrl', ['$scope', '$stateParams', 'FormEntryServ
 
 
     function loadPatient(patientUuid, obj) {
-      PatientService.get(patientUuid, function (p) {
+      PatientService.get({uuid:patientUuid}, function (p) {
         obj.p = p;
       });
     };
@@ -54,9 +54,9 @@ formEntry.controller('SavedFormsCtrl', ['$scope', '$stateParams', 'FormEntryServ
 formEntry.controller('FormEntryCtrl', ['$scope', '$stateParams', 'EncounterService', 'PatientService', 'FormEntryService', 'spinnerService',
   function ($scope, $stateParams, EncounterService, PatientService, FormEntryService, spinner) {
     $scope.patientUuid = $stateParams.patientUuid;
-    PatientService.get($stateParams.patientUuid,
+    PatientService.get({uuid:$stateParams.patientUuid},
       function (patient) {
-        $scope.patient = PatientService.Patient(patient.patientData);
+        $scope.patient = patient;
       }
     );
 

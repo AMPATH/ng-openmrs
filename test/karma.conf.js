@@ -28,10 +28,11 @@ module.exports = function(config) {
       'bower_components/angular-sanitize/angular-sanitize.js',
       'bower_components/angular-touch/angular-touch.js',
       'bower_components/cryptojs/cryptojs.js',
-      'bower_components/ng-infinite-scroll/ng-infinite-scroll.js',
       'bower_components/jquery-validation/dist/jquery.validate.js',
       'bower_components/angular-ui-router/release/angular-ui-router.js',
       'bower_components/underscore/underscore.js',
+      'bower_components/ngInfiniteScroll/build/ng-infinite-scroll.js',
+      'bower_components/angu-fixed-header-table/angu-fixed-header-table.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'app/scripts/**/*.js',

@@ -515,9 +515,19 @@ openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettin
       v += ",encounterType:ref,provider:ref)";
       params.v = v;
       Encounter = getResource();
-      Encounter.query(params,true
-        ,function (data) {callback(data);}
-      );
+      PatientService.getLocal(params.patient,function(patient) {
+        Encounter.query(params, true,
+          function (data) {
+            var uuids = patient.patientData.encounters || [];
+            _.each(data.results, function (item) {
+              uuids.push(item.uuid);
+            });
+            callback(data);
+            patient.patientData.encounters = _.uniq(uuids);
+            PatientService.saveLocal(params.patient, patient.patientData);
+          }
+        );
+      });
     };
 
     //May be better to have one function patientQuery where calling function specifies as

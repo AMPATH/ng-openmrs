@@ -24,14 +24,9 @@
             </div>
           </div>
       </li>
-      <li class="list-group-item" style="font-size:large">
-        Last Appt Date: {{patient.last_appt_date}}<br/>
-        Last Appt Type: {{patient.last_appt_type}}<br/>
-        Last RTC Date: {{patient.rtc_date}}<br/>
-      </li>
     </ul>
 
-
+    <hiv-summary patient-uuid="{{patient.getUuid()}}"></hiv-summary>
     <button class="btn btn-custom btn-lg btn-block" ng-click="encounterHistory = !encounterHistory">Encounter History
     </button>
     <div collapse="!encounterHistory">
@@ -43,23 +38,22 @@
 
     </div>
 
-    <button class="btn btn-custom btn-lg btn-block" ng-click="dataHistory = !dataHistory">Data History
+    <button class="btn btn-custom btn-lg btn-block" ng-click="vitalsHistory = !vitalsHistory">Vitals History
+    </button>
+    <div collapse="!vitalsHistory">
+      <h3>Vitals History</h3>
+      <div style="height:350px; overflow:scroll;">
+        <vitals-pane patient-uuid="{{patient.getUuid()}}"></vitals-pane>
+      </div>
+    </div>
+
+    <button class="btn btn-custom btn-lg btn-block" ng-click="dataHistory = !dataHistory">Lab/Imaging Results
     </button>
     <div collapse="!dataHistory">
-      <table class='table table-hover table-striped'>
-        <tr>
-          <td>Date</td>
-          <td>Type</td>
-          <td>Location</td>
-          <td>Provider</td>
-        </tr>
-        <tr ng-repeat="encounter in encounters" ng-click="showEncounter(encounter.uuid,encounter.form.uuid)">
-          <td>{{encounter.encounterDatetime.substring(0,10)}}</td>
-          <td>{{encounter.encounterType.display}}</td>
-          <td>{{encounter.location.display}}</td>
-          <td>{{encounter.provider.display}}</td>
-        </tr>
-      </table>
+      <h3>Lab/Imaging History</h3>
+      <div style="height:350px; overflow:scroll;">
+        <labs-and-imaging-pane patient-uuid="{{patient.getUuid()}}"></labs-and-imaging-pane>
+      </div>
     </div>
 
     <button class="btn btn-custom btn-lg btn-block" ng-click="tbHistory = !tbHistory">TB History</button>

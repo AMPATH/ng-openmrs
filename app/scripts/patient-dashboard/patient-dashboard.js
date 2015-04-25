@@ -3,7 +3,7 @@
 /* Directives */
 
 
-angular.module('patient-dashboard', ['openmrs-services-extended', 'utility.widgets']);
+angular.module('patient-dashboard', ['openmrs-services-extended', 'utility.widgets','etl','infinite-scroll']);
 
 
 mod.config(['$stateProvider',

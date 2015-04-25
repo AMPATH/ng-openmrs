@@ -187,7 +187,7 @@ auth.factory('Auth',
               Auth.setUsername(username);
               Auth.setPassword(password);
               Auth.changeUser(username, password);
-              Auth.clearCredentials();
+              //Auth.clearCredentials();
               $location.path("/apps");
             }
             else {

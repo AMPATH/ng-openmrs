@@ -1,5 +1,6 @@
 /* app css stylesheet */
 
+
 .error {
     color:red;
 }
@@ -95,8 +96,8 @@ div.ui-controlgroup-label {
     text-decoration: none;
     font-size: medium;
     font-weight:bold;
-    
-}    
+
+}
 
 
 .ui-field-contain .ui-controlgroup-label {
@@ -117,7 +118,7 @@ div.ui-controlgroup-label {
 }
 
 
- 
+
 .ui-select .ui-btn-corner-all, .ui-btn.ui-corner-all, .ui-slider-track.ui-corner-all, .ui-flipswitch.ui-corner-all, .ui-li-count{
     font-size: 25px;
     line-height: 30px;
@@ -151,7 +152,7 @@ a {
 
 a:hover { text-decoration: underline; }
 
- 
+
 
 #wrapper {
 	width: "100%";
@@ -187,11 +188,11 @@ a:hover { text-decoration: underline; }
 #wordmark
 {
     background: #007733;
-    float: left;    
+    float: left;
 }
 
 #wordmark img
-{   
+{
     width: 85%;
     color: #007733;
 }
@@ -209,7 +210,7 @@ vertical-align:bottom;
     padding: 0px;
     margin: 0px;
 }
-	
+
 #links li {
     display: block;
     float: right;
@@ -222,7 +223,7 @@ vertical-align:bottom;
     color: #fff;
     display: block;
     padding: 0 1em;
-    background: #003333;    
+    background: #003333;
     float: right;
     vertical-align:bottom;
 }

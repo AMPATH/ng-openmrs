@@ -8,6 +8,7 @@ var ngOpenmrsApp = angular.module('ngOpenmrsApp',
     'localStorageServices',
     'data-manager',
     'ui.bootstrap',
+    'etl',
     'defaulter-cohort',
     'openmrs-auth',
     'network-manager',
@@ -18,7 +19,8 @@ var ngOpenmrsApp = angular.module('ngOpenmrsApp',
     'patient-encounter',
     'spinner',
     'layout',
-    'underscore'
+    'underscore',
+    'infinite-scroll',
   ]);
 
 ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
@@ -41,8 +43,8 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 
     $urlRouterProvider.otherwise("/apps");
   }])
-  .run(['$rootScope', '$state', 'Auth', 'OpenmrsSettings', 'DefaulterCohortService', 'FormEntryService', 'NetworkManagerService','DataManagerService',
-    function ($rootScope, $state, Auth, OpenmrsSettings, DefaulterCohortService, FormEntryService, NetworkManagerService,DataManagerService) {
+  .run(['$rootScope', '$state', 'Auth','$http',
+    function ($rootScope, $state, Auth,$http) {
       $rootScope.$on("$stateChangeStart", function (event, toState, toParams, fromState, fromParams) {
         if (toState.authenticate && !Auth.isAuthenticated()) {
           $state.transitionTo("login");
@@ -51,6 +53,5 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
         if (toState.url == "/logout") {
           Auth.logout();
         }
-
-      });
+    });
     }]);
