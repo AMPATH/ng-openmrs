@@ -13,6 +13,6 @@ mod.config(['$stateProvider',
         url: '/patient/:uuid',
         templateUrl: 'views/patient-dashboard/patient-dashboard.html',
         controller: 'PatientDashboardCtrl',
-        authenticate: true,
+        authenticate: true
       })
   }]);

@@ -608,7 +608,10 @@ openmrsServices.factory('LocationService', ['$resource', 'OpenmrsSettings','Data
     LocationService.query = function (params,callback) {
       Location = getResource();
       Location.query(params,true,
-        function (data) { callback(data.results); }
+        function (data) {
+          if(data.results) callback(data.results);
+          else callback(data);
+        }
       );
     };
 

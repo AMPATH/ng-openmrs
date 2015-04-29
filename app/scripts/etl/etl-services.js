@@ -54,6 +54,44 @@ mod.factory('etlService',["$resource",
     }
 
 
+    etlService.getClinicSummary = function(params,callback) {
+      r = $resource(etlService.getContext() + "/etl/location/:uuid/hiv-summary-indicators",
+        {uuid: '@uuid'},
+        {query: {method: "GET", isArray: false}}
+      );
+      r.get(params,function(result) {callback(result);})
+    }
+
+
+    etlService.getDefaulterList = function(params,callback) {
+      r = $resource(etlService.getContext() + "/etl/location/:uuid/defaulter-list",
+        {uuid: '@uuid'},
+        {query: {method: "GET", isArray: false}}
+      );
+      r.get(params,function(result) {callback(result);})
+    }
+
+
+    etlService.getScheduledAppointments = function(params,callback) {
+      r = $resource(etlService.getContext() + "/etl/location/:uuid/appointment-schedule",
+        {uuid: '@uuid'},
+        {query: {method: "GET", isArray: false}}
+      );
+      r.get(params,function(result) {callback(result);})
+    }
+
+
+    etlService.getMonthlySchedule = function(params,callback) {
+      r = $resource(etlService.getContext() + "/etl/location/:uuid/monthly-appointment-schedule",
+        {uuid: '@uuid'},
+        {query: {method: "GET", isArray: false}}
+      );
+      r.get(params,function(result) {callback(result);})
+    }
+
+
+
+
     return etlService;
 
   }

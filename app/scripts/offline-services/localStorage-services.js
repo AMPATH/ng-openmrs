@@ -243,7 +243,7 @@ localStorageServices.factory('localStorage.utils', [
         if (usesEncryption) {
           item = decrypt(item);
         }
-        if(searchString === undefined || searchString === null) {
+        if(searchString === undefined || searchString === null || searchString === "") {
           resultSet.push(angular.fromJson(item));
         }
         else if (queryFields) {
