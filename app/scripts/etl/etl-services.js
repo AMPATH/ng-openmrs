@@ -8,7 +8,7 @@ var mod = angular.module("etl");
 mod.factory('etlService',["$resource",
   function ($resource) {
     var etlService = {};
-    var context = 'http://etl.ampath.or.ke:3000',r;
+    var context = 'https://etl.ampath.or.ke:8002',r;
 
     etlService.setContext = function(url) {context = url;}
     etlService.getContext = function() {return context;}

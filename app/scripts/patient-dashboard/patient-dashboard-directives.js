@@ -13,8 +13,8 @@ angular.module('patient-dashboard')
         link : function(scope, element, attrs) {
           attrs.$observe('patientUuid', function (newVal, oldVal) {
             if (newVal && newVal != "") {
-              //var params = {startIndex: scope.nextStartIndex, uuid: scope.patientUuid, limit: 20};
-              var params = {startIndex: scope.nextStartIndex, uuid: "58d12592-c07b-4538-992a-6da8ba69a68c",limit:1};
+              var params = {startIndex: scope.nextStartIndex, uuid: scope.patientUuid, limit: 20};
+              //var params = {startIndex: scope.nextStartIndex, uuid: "58d12592-c07b-4538-992a-6da8ba69a68c",limit:1};
 
               etlService.getHivSummary(params,function(hivData) {
                   scope.hivSummary = hivData.result[0];
@@ -37,7 +37,7 @@ angular.module('patient-dashboard')
         controller: function ($scope, $state) {
           $scope.encounters = [];
           $scope.busy = false;
-          $scope.nextStartIndex = -1;
+          $scope.nextStartIndex = 0;
 
           $scope.showEncounter = function (encUuid, formUuid) {
             for (var i in $scope.encounters) {
@@ -131,7 +131,7 @@ angular.module('patient-dashboard')
         controller: function ($scope, $state) {
           $scope.encounters = [];
           $scope.busy = false;
-          $scope.nextStartIndex = -1;
+          $scope.nextStartIndex = 0;
         },
         link: function (scope, element, attrs) {
 
@@ -149,8 +149,8 @@ angular.module('patient-dashboard')
             if (scope.busy === true) return;
             scope.busy = true;
 
-            //var params = {startIndex: scope.nextStartIndex, uuid: scope.patientUuid, limit: 20};
-            var params = {startIndex: scope.nextStartIndex, uuid: "5b702292-1359-11df-a1f1-0026b9348838", limit: 20};
+            var params = {startIndex: scope.nextStartIndex, uuid: scope.patientUuid, limit: 20};
+            //var params = {startIndex: scope.nextStartIndex, uuid: "5b702292-1359-11df-a1f1-0026b9348838", limit: 20};
 
             etlService.getVitals(params, function (data) {
               console.log(data);
@@ -178,7 +178,7 @@ angular.module('patient-dashboard')
         controller: function ($scope, $state) {
           $scope.encounters = [];
           $scope.busy = false;
-          $scope.nextStartIndex = -1;
+          $scope.nextStartIndex = 0;
         },
         link: function(scope, element,attrs) {
 
@@ -196,8 +196,8 @@ angular.module('patient-dashboard')
             if (scope.busy === true) return;
             scope.busy = true;
 
-            //var params = {startIndex: scope.nextStartIndex, uuid: scope.patientUuid, limit: 20};
-            var params = {startIndex: scope.nextStartIndex, uuid: "58d12592-c07b-4538-992a-6da8ba69a68c", limit: 20};
+            var params = {startIndex: scope.nextStartIndex, uuid: scope.patientUuid, limit: 20};
+            //var params = {startIndex: scope.nextStartIndex, uuid: "58d12592-c07b-4538-992a-6da8ba69a68c", limit: 20};
 
             etlService.getData(params, function (data) {
               console.log(data);
