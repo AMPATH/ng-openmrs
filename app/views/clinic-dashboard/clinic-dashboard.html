@@ -11,7 +11,7 @@
       <br/><br/>
     </div>
 
-    <div class="list-group" ng-show="schedule">
+    <div class="list-group panel" id="appointmentList">
       <h3>Appointment List: ({{schedule.length}} patients)</h3>
 
       <label>Start Date:</label>
@@ -32,7 +32,7 @@
       </a>
     </div>
 
-    <div ng-show="monthlySchedule">
+    <div class="panel" id="monthlySchedule">
       <label>Choose a month</label>
       <input type="text" id="startDateMonthly" ng-model="startDateMonthly" name="start_date_monthly"
              datepicker-popup="MMMM" is-open="dt4.open" ng-click="dt4.open=true"
@@ -46,6 +46,25 @@
       </a>
 
     </div>
+
+    <div class="panel" id="defaulterList">
+      <label>Days missing >= :</label>
+      <input type="text" ng-model="defaulterThreshold"/>
+      <a class="btn btn-custom btn-lg btn-block" ng-click="getDefaulterList()">Get Defaulter List</a>
+      <br/><br/>
+      <label>Search: <input ng-model="searchText"></label>
+      <a ui-sref="patient({uuid:patient.uuid})" style="font-size:large" class="list-group-item" ng-repeat="patient in defaulterList|filter:searchText">
+        <span class="badge"><span class="glyphicon glyphicon-chevron-right"></span></span>
+        <b></b><br/>
+        {{toTitleCase(patient.person_name)}}
+        Identifier(s): {{patient.identifiers}}<br/>
+        Last Appointment: {{patient.encounter_datetime.substring(0,10)}} ({{patient.encounter_type_name}})<br/>
+        Phone: {{patient.phone_number}}
+      </a>
+
+
+    </div>
+
 
     <br/><br/>
 

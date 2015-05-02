@@ -23,6 +23,7 @@ pd.controller('ClinicDashboardCtrl', ['$scope', '$stateParams','$timeout', 'etlS
       $scope.endDate = null;
       $scope.monthlySchedule = null;
       $scope.startDateMonthly = null;
+      $scope.defaulterList = null;
     });
 
     $scope.getClinicSummary = function() {
@@ -36,6 +37,8 @@ pd.controller('ClinicDashboardCtrl', ['$scope', '$stateParams','$timeout', 'etlS
 
     $scope.getScheduledAppointments = function(startDate,endDate) {
 
+      $(".panel").hide();
+      $("#appointmentList").show();
       if(startDate === undefined)
         startDate = $scope.startDate ? $scope.startDate.toISOString().substring(0,10) : null;
       else $scope.startDate = new Date(startDate);
@@ -64,6 +67,9 @@ pd.controller('ClinicDashboardCtrl', ['$scope', '$stateParams','$timeout', 'etlS
     }
 
     $scope.getMonthlySchedule = function() {
+      $(".panel").hide();
+      $("#monthlySchedule").show();
+
       var startDateMonthly = $scope.startDateMonthly ? $scope.startDateMonthly.toISOString().substring(0,10) : null;
       var params =
       {
@@ -74,7 +80,7 @@ pd.controller('ClinicDashboardCtrl', ['$scope', '$stateParams','$timeout', 'etlS
         function(result) {
           console.log(result);
           $scope.monthlySchedule = result.result;
-          $scope.schedule = null;
+
         }
       );
 
@@ -82,7 +88,10 @@ pd.controller('ClinicDashboardCtrl', ['$scope', '$stateParams','$timeout', 'etlS
 
 
     $scope.getDefaulterList = function() {
-      etlService.getDefaulterList({uuid:$scope.locationUuid},
+      $(".panel").hide();
+      $("#defaulterList").show();
+
+      etlService.getDefaulterList({uuid:$scope.locationUuid,defaulterPeriod:$scope.defaulterPeriod},
         function(result) {
           $scope.defaulterList = result;
         }
