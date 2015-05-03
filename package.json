@@ -1,7 +1,9 @@
 {
   "name": "ngopenmrs",
   "version": "0.0.0",
-  "dependencies": {},
+  "dependencies": {
+    "datatables": "^1.10.7"
+  },
   "repository": {},
   "devDependencies": {
     "grunt": "^0.4.5",
