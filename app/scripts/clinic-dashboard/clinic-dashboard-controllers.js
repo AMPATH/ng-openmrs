@@ -107,7 +107,7 @@ pd.controller('ClinicEncounterDataCtrl', ['$scope', '$stateParams','$timeout', '
 
     $scope.filters = [];
     $scope.encounters = {};
-    var params = {uuid:$stateParams.uuid,startDate:"2015-04-27"};
+    var params = {uuid:$stateParams.uuid};
     etlService.getClinicEncounterData(params,function(data){
       $scope.encounters = data.result;
       console.log($scope.encounters);
