@@ -22,12 +22,13 @@ mod.factory('etlService',["$resource",
       return r;
     }
 
+
     etlService.getHivSummary = function(params,callback) {
       r = $resource(etlService.getContext() + "/etl/patient/:uuid/hiv-summary",
         {uuid: '@uuid'},
         {query: {method: "GET", isArray: false}}
       );
-      //test
+
       r.get(params,function(result) {
         console.log(result);
         callback(result);

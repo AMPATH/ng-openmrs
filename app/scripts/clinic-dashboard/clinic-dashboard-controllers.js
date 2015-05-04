@@ -4,17 +4,20 @@
 
 var cd = angular.module('clinic-dashboard');
 
+function toTitleCase(str)
+{
+  if(typeof str === "string")
+    return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+}
+
 pd.controller('ClinicDashboardCtrl', ['$scope', '$stateParams','$timeout', 'etlService',
   function ($scope, $stateParams, $timeout,etlService) {
     $scope.locationUuid = null;
 
     $scope.clinicSummary = {};
 
-    $scope.toTitleCase = function(str)
-    {
-      if(typeof str === "string")
-        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-    }
+    $scope.toTitleCase = toTitleCase;
+
     $(".panel").hide();
     $scope.$watch('locationUuid',function(newValue) {
       if(newValue === undefined) return;
@@ -102,12 +105,18 @@ pd.controller('ClinicDashboardCtrl', ['$scope', '$stateParams','$timeout', 'etlS
     }
   }]);
 
-pd.controller('ClinicEncounterDataCtrl', ['$scope', '$stateParams','$timeout', 'etlService',
-  function ($scope, $stateParams, $timeout,etlService) {
+pd.controller('ClinicEncounterDataCtrl', ['$scope', '$stateParams','$timeout', 'etlService','$state',
+  function ($scope, $stateParams, $timeout,etlService,$state) {
 
     $scope.filters = [];
     $scope.encounters = {};
     var params = {uuid:$stateParams.uuid};
+    $scope.toTitleCase = toTitleCase;
+
+    $scope.toPatientDashboard = function(patientUuid) {
+      $state.go("patient",{uuid:patientUuid});
+    }
+
     etlService.getClinicEncounterData(params,function(data){
       $scope.encounters = data.result;
       console.log($scope.encounters);
@@ -115,13 +124,37 @@ pd.controller('ClinicEncounterDataCtrl', ['$scope', '$stateParams','$timeout', '
     });
 
     $scope.filterResults = function() {
-      console.log(Object.keys($scope.filters));
-      _.each(a,function(o) {
-        console.log('a');
-        console.log(o);
-        console.log(Object.keys(o));
+      console.log($scope.filters);
+      var filters = [],curFilter;
+
+      for(var column in $scope.filters) {
+        curFilter = {column: column, filters: {}};
+        for(var i in $scope.filters[column]) {
+          if (i.startsWith("start"))
+            curFilter.filters.start = $scope.filters[column][i];
+          else if (i.startsWith("end"))
+            curFilter.filters.end = $scope.filters[column][i];
+          else
+            curFilter.filters.like = $scope.filters[column][i];
+        }
+        filters.push(curFilter);
+      }
+
+      console.log(filters);
+
+      var filterParams = {
+        uuid: $stateParams.uuid,
+        filters: angular.toJson(filters)
+      };
+
+      etlService.getClinicEncounterData(filterParams,function(data){
+        $scope.encounters = data.result;
+        console.log($scope.encounters);
+        console.log(data);
       });
+
     }
+
 
 
 
