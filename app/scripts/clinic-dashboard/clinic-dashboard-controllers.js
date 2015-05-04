@@ -12,10 +12,12 @@ pd.controller('ClinicDashboardCtrl', ['$scope', '$stateParams','$timeout', 'etlS
 
     $scope.toTitleCase = function(str)
     {
-      return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+      if(typeof str === "string")
+        return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     }
-
+    $(".panel").hide();
     $scope.$watch('locationUuid',function(newValue) {
+      if(newValue === undefined) return;
       console.log('location = ' + newValue);
       $scope.getClinicSummary();
       $scope.schedule = null;
@@ -100,8 +102,28 @@ pd.controller('ClinicDashboardCtrl', ['$scope', '$stateParams','$timeout', 'etlS
     }
   }]);
 
-pd.controller('AppointmentScheduleCtrl', ['$scope', '$stateParams','$timeout', 'etlService',
+pd.controller('ClinicEncounterDataCtrl', ['$scope', '$stateParams','$timeout', 'etlService',
   function ($scope, $stateParams, $timeout,etlService) {
+
+    $scope.filters = [];
+    $scope.encounters = {};
+    var params = {uuid:$stateParams.uuid,startDate:"2015-04-27"};
+    etlService.getClinicEncounterData(params,function(data){
+      $scope.encounters = data.result;
+      console.log($scope.encounters);
+      console.log(data);
+    });
+
+    $scope.filterResults = function() {
+      console.log(Object.keys($scope.filters));
+      _.each(a,function(o) {
+        console.log('a');
+        console.log(o);
+        console.log(Object.keys(o));
+      });
+    }
+
+
 
   }
 ]);

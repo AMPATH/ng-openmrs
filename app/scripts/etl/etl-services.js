@@ -9,6 +9,7 @@ mod.factory('etlService',["$resource",
   function ($resource) {
     var etlService = {};
     var context = 'https://etl.ampath.or.ke:8002',r;
+    //var context = 'https://localhost:8002',r;
 
     etlService.setContext = function(url) {context = url;}
     etlService.getContext = function() {return context;}
@@ -88,6 +89,17 @@ mod.factory('etlService',["$resource",
       );
       r.get(params,function(result) {callback(result);})
     }
+
+
+    etlService.getClinicEncounterData = function(params,callback) {
+      r = $resource(etlService.getContext() + "/etl/location/:uuid/clinic-encounter-data",
+        {uuid: '@uuid'},
+        {query: {method: "GET", isArray: false}}
+      );
+      r.get(params,function(result) {callback(result);})
+    }
+
+
 
 
 

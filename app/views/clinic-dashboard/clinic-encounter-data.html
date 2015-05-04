@@ -1,0 +1,59 @@
+<div ng-controller="ClinicEncounterDataCtrl">
+  <div class="container-fluid">
+    <a class="btn btn-custom btn-lg btn-block" back-button>Back</a>
+    <table class='table table-hover table-striped'>
+      <thead>
+      <tr>
+        <th></th>
+        <th>Date</th>
+        <th>Encounter Type</th>
+        <th>Identifier(s)</th>
+        <th>Age</th>
+        <th>Gender</th>
+        <th>Visit Num</th>
+        <th>Prev RTC Date</th>
+        <th>ARV Start Date</th>
+        <th>Current ARV Regimen</th>
+        <th>EDD</th>
+        <th>Last CD4 Count</th>
+        <th>Last Viral Load</th>
+      </tr>
+      <tr>
+        <th><input type="button" ng-click="filterResults()" value="Filter"/></th>
+        <th><input type="text" ng-model="filters.encounter_datetime.startDateFilter"/> - <input type="text" ng-model="filters.encounter_datetime.endDateFilter"/></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th><input type="text" ng-model="filters.vl_1.viralLoadStartFilter"/> - <input type="text" ng-model="filters.vl_1.viralLoadEndFilter"/></th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr ng-repeat="encounter in encounters" ng-click="showEncounter(encounter.uuid,encounter.form.uuid)">
+        <td></td>
+        <td>{{encounter.encounter_datetime.substring(0,10)}}</td>
+        <td>{{encounter.encounter_type}}</td>
+        <td>{{encounter.identifiers}}</td>
+        <td>{{encounter.age}}</td>
+        <td>{{encounter.gender}}</td>
+        <td>{{encounter.visit_num}}</td>
+        <td>{{encounter.prev_rtc_date.substring(0,10)}}</td>
+        <td>{{encounter.arv_start_date.substring(0,10)}}</td>
+        <td>{{encounter.cur_arv_meds}}</td>
+        <td>{{encounter.edd.substring(0,10)}}</td>
+        <td>{{encounter.cd4_1}} ({{encounter.cd4_1_date.substring(0,10)}})</td>
+        <td>{{encounter.vl_1}} ({{encounter.vl_1_date.substring(0,10)}})</td>
+      </tr>
+      </tbody>
+    </table>
+
+
+    <br/>
+  </div>
+</div>

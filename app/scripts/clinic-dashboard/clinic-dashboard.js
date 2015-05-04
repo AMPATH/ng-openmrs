@@ -14,14 +14,9 @@ clinic.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
         templateUrl: 'views/clinic-dashboard/clinic-dashboard.html',
         authenticate: true
       })
-      .state('appointment-schedule', {
-        url: "/clinic-dashboard/:uuid/appointment-schedule",
-        templateUrl: 'views/clinic-dashboard/appointment-schedule.html',
-        authenticate: true
-      })
-      .state('appointment-calendar', {
-        url: "/clinic-dashboard/:uuid/monthly-appointment-schedule",
-        templateUrl: 'views/clinic-dashboard/appointment-calendar.html',
+      .state('clinic-encounter-data', {
+        url: "/clinic-dashboard/:uuid/clinic-encounter-data",
+        templateUrl: 'views/clinic-dashboard/clinic-encounter-data.html',
         authenticate: true
       })
     ;
