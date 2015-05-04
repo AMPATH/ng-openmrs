@@ -60,6 +60,7 @@
         {{toTitleCase(patient.person_name)}}
         Identifier(s): {{patient.identifiers}}<br/>
         Last Appointment: {{patient.encounter_datetime.substring(0,10)}} ({{patient.encounter_type_name}})<br/>
+        RTC Date: {{patient.rtc_date.substring(0,10)}}<br/>
         Phone: {{patient.phone_number}}
       </a>
 
