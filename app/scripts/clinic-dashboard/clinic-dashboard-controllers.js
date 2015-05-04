@@ -98,7 +98,7 @@ pd.controller('ClinicDashboardCtrl', ['$scope', '$stateParams','$timeout', 'etlS
 
       etlService.getDefaulterList({uuid:$scope.locationUuid,defaulterPeriod:$scope.defaulterPeriod},
         function(result) {
-          $scope.defaulterList = result;
+          $scope.defaulterList = result.result;
         }
       );
 
