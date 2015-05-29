@@ -5,8 +5,8 @@
 
 var dc = angular.module('defaulter-cohort');
 
-dc.controller('DefaulterCohortCtrl', ['$scope', '$http', 'Auth', 'DefaulterCohortService',
-  function ($scope, $http, Auth, DefaulterCohortService) {
+dc.controller('DefaulterCohortCtrl', ['$scope', '$http', 'DefaulterCohortService',
+  function ($scope, $http, DefaulterCohortService) {
     $scope.defaulterCohorts = "";
     $scope.defaulterCohortUuid = "";
     $scope.defaulterCohort = {};
@@ -47,7 +47,7 @@ dc.controller('DefaulterCohortCtrl', ['$scope', '$http', 'Auth', 'DefaulterCohor
 
       DefaulterCohortService.get($scope.defaulterCohortUuid, function (data) {
         if(data.online === false) {
-          alert("You must be online to download this cohort.")
+          alert("You must be online to download this cohort.");
           return;
         }
         console.log(data);

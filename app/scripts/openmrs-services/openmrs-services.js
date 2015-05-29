@@ -1,43 +1,5 @@
 'use strict';
 
-
-var openmrsSettings = angular.module('openmrs-settings',[]);
-
-openmrsSettings.factory('OpenmrsSettings', ['$injector',
-  function ($injector) {
-    var settings = {};
-    settings.context = "http://etl1.ampath.or.ke:8080/amrs";
-    settings.contextOptions =
-      [
-        "http://etl1.ampath.or.ke:8080/amrs",
-        "https://amrs.ampath.or.ke:8443/amrs"
-      ];
-
-    settings.getContextOptions = function() {
-      return settings.contextOptions;
-    }
-
-    settings.addContext = function(url) {
-      settings.contextOptions.push(url);
-    }
-
-    settings.setContext = function(url) {
-      settings.context = url;
-      console.log(url);
-      var Auth = $injector.get("Auth");
-      Auth.authenticateOpenmrsContext(function(authenticated) {
-        console.log('authenticated: ' + authenticated);
-      })
-      if(settings.contextOptions.indexOf(url) === -1) settings.addContext(url);
-    }
-
-    settings.getContext = function() {
-      return settings.context;
-    }
-    return settings;
-  }]);
-
-
 var openmrsServices = angular.module('openmrsServices', ['ngResource', 'ngCookies','openmrs-settings']);
 
 openmrsServices.factory('OpenmrsUtilityService', [
@@ -154,7 +116,7 @@ openmrsServices.factory('OpenmrsSessionService', ['$resource','OpenmrsSettings',
       OpenmrsSession = $resource(url);
       return OpenmrsSession.delete({}, function (data, status, headers) {
       });
-    }
+    };
     return service;
   }]);
 
@@ -232,7 +194,7 @@ Patient.prototype.getName = function () {
   return (this.patientData.person.preferredName.givenName || "") + " "
     + (this.patientData.person.preferredName.middleName || "") + " "
     + this.patientData.person.preferredName.familyName;
-}
+};
 Patient.prototype.getGivenName = function () {
   return this.patientData.person.preferredName.givenName;
 };
@@ -277,7 +239,7 @@ Patient.prototype.getPhoneNumber = function () {
       return attr.value;
     }
   }
-}
+};
 
 Patient.prototype.getClinicalHome = function () {
   for (var i in this.patientData.person.attributes) {
@@ -287,12 +249,12 @@ Patient.prototype.getClinicalHome = function () {
     }
   }
   return "";
-}
+};
 
 
 Patient.prototype.getAttributes = function () {
   return this.patientData.person.attributes;
-}
+};
 
 //Converts an object in form of {typeUuuid:value} into rest format
 Patient.prototype.setAttributes = function (newAttributes) {
@@ -317,7 +279,7 @@ Patient.prototype.setAttributes = function (newAttributes) {
       existingAttrs.push(restAttr);
     }
   }
-}
+};
 
 openmrsServices.factory('Patient', [
   function() {
@@ -341,11 +303,11 @@ openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings
 
     PatientService.Patient = function (patientData) {
       return new Patient(patientData);
-    }
+    };
 
     PatientService.getName = function () {
       return 'patient';
-    }
+    };
 
 
     PatientService.get = function (patientUuid, callback) {
@@ -369,7 +331,7 @@ openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings
         },
         function(error) {onError({online:false,error:error})}
       );
-    }
+    };
 
     return PatientService;
 
@@ -488,21 +450,21 @@ openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings',
     };
 
 
-    ObsService.void = function (obsUuid, callback) {
-      Obs = getResource();
+    ObsService.voidO = function (obsUuid, callback) {
+      Obs = getResourkce();
       Obs.delete({uuid: obsUuid},
         function (data) {
           if (callback) { callback(data); }
           else return data;
         });
-    }
+    };
 
     ObsService.voidObs = function (obsToVoid, callback) {
       for (var i in obsToVoid) {
         var uuid = obsToVoid[i];
         ObsService.void(uuid, callback);
       }
-    }
+    };
 
     return ObsService;
   }]);
@@ -668,7 +630,7 @@ openmrsServices.factory('PersonAttribute', ['$resource','OpenmrsSettings',
   function ($resource,OpenmrsSettings) {
     return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/person/:personUuid/attribute/:uuid", {},
       {
-        query: {method: "GET", isArray: false},
+        query: {method: "GET", isArray: false}
       }
     );
   }]);
@@ -681,7 +643,7 @@ openmrsServices.factory('PersonAttributeService', ['$resource','OpenmrsSettings'
     function getResource() {
       return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/person/:personUuid/attribute/:uuid", {},
         {
-          query: {method: "GET", isArray: false},
+          query: {method: "GET", isArray: false}
         }
       );
 
@@ -738,7 +700,7 @@ openmrsServices.factory('OpenmrsUserService', ['$resource','OpenmrsSettings',
           else return data.roles;},
         function(error) {callback({online:false,error:error});}
       );
-    }
+    };
 
     //role can be either role uuid or name
     OpenmrsUserService.hasRole = function (username, role, callback) {

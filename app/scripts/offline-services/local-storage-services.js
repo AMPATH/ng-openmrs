@@ -1,10 +1,10 @@
 'use strict';
 
-var localStorageServices = angular.module('localStorageServices',[]);
+var mod = angular.module('local-storage-services',[]);
 
 
-localStorageServices.factory('localStorage.utils', [
-  function (Auth) {
+mod.factory('localStorage.utils', [
+  function () {
     var service = {};
     var encryptionPassword;
 
@@ -12,11 +12,11 @@ localStorageServices.factory('localStorage.utils', [
       var size = angular.toJson(localStorage).length;
       console.log(size);
       return (size/1024/1024).toFixed(2);
-    }
+    };
 
     service.setPassword = function(password) {
       encryptionPassword = password;
-    }
+    };
 
     service.init = function(tables) {
       var name,t;
@@ -26,7 +26,7 @@ localStorageServices.factory('localStorage.utils', [
         t = localStorage.getItem(name);
         if (t === undefined || t === null) localStorage.setItem(name,"{}");
       }
-    }
+    };
 
     service.reset = function(tables) {
       var name,t;
@@ -34,7 +34,7 @@ localStorageServices.factory('localStorage.utils', [
         name = tables[i];
         t = localStorage.setItem(name,"{}");
       }
-    }
+    };
 
 
     function getTable(name) {
@@ -59,7 +59,7 @@ localStorageServices.factory('localStorage.utils', [
     //expiration : number of days until expiration
     service.setExpirationDate = function (tableName, key, expiration) {
       var defaultDays = 7;
-      var table = getTable("expiration")
+      var table = getTable("expiration");
       var expKey = tableName + "##" + key;
       var expDate = new Date();
 
@@ -74,7 +74,7 @@ localStorageServices.factory('localStorage.utils', [
       }
       else table[dateKey] = group;
       setTable("expiration", table);
-    }
+    };
 
     //dateKey : YYYY-MM-DD
     /* TO DO : Make this a loop such that all dates from a start date (e.g. 2015-01-01) are removed. */
@@ -117,7 +117,7 @@ localStorageServices.factory('localStorage.utils', [
       var table = getTable(tableName);
       delete table[key];
       setTable(tableName, table);
-    }
+    };
 
     /*
      Returns null if key not in table
@@ -159,11 +159,11 @@ localStorageServices.factory('localStorage.utils', [
         resultSet.push(item);
       }
       callback(resultSet);
-    }
+    };
 
     service.getTable = function(tableName) {
       return angular.fromJson(localStorage.getItem(tableName));
-    }
+    };
 
     service.set = function (tableName, key, item, usesEncryption,callback) {
       var table = getTable(tableName);
@@ -175,7 +175,7 @@ localStorageServices.factory('localStorage.utils', [
       setTable(tableName, table);
       service.setExpirationDate(tableName, key);
       if(callback) callback(true);
-    }
+    };
 
 
     /*
@@ -196,7 +196,7 @@ localStorageServices.factory('localStorage.utils', [
 
       setTable(tableName,table);
       if(callback) callback(true);
-    }
+    };
 
 
 
@@ -218,13 +218,13 @@ localStorageServices.factory('localStorage.utils', [
       }
       localStorage.setItem(tableName, angular.toJson(table));
       callback(true);
-    }
+    };
 
 
     service.setTable = function(tableName,table,callback) {
       localStorage.setItem(tableName,angular.toJson(table));
       if(callback) callback(true);
-    }
+    };
 
 
     function escapeRegExp(str) {

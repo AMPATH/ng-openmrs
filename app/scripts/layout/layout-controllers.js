@@ -1,8 +1,9 @@
+'use strict';
 /**
  * Created by Jonathan on 3/31/2015.
  */
 
-var layout = angular.module('layout', ['network-manager']);
+var layout = angular.module('layout');
 
 layout.controller('HeaderCtrl',['$scope','$rootScope','$interval','NetworkManagerService',
   function($scope,$rootScope,$interval,NetworkManagerService) {
@@ -22,11 +23,11 @@ layout.controller('HeaderCtrl',['$scope','$rootScope','$interval','NetworkManage
 
     $scope.checkOnlineStatus = function() {
       NetworkManagerService.checkOnlineStatus();
-    }
+    };
 
     $scope.setOffline = function() {
       NetworkManagerService.setOffline();
-    }
+    };
 
   }]);
 
@@ -40,11 +41,11 @@ layout.controller('FooterCtrl',['$scope','OpenmrsSettings','DataManagerService',
 
     $scope.setOpenmrsContext = function(url) {
       OpenmrsSettings.setContext(url);
-    }
+    };
 
     $scope.$watch('openmrsContext',function(newUrl) {
       $scope.setOpenmrsContext(newUrl);
-    })
+    });
 
     $scope.updateAmountStored = function() {
       $scope.amountStored = dataMgr.getAmountStored();

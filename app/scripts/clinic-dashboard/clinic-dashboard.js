@@ -4,7 +4,7 @@
 
 'use strict';
 
-var clinic = angular.module('clinic-dashboard', ['ngResource', 'localStorageServices']);
+var clinic = angular.module('clinic-dashboard', ['ngResource', 'local-storage-services']);
 
 clinic.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
   function ($stateProvider, $urlRouterProvider, $httpProvider) {
@@ -23,4 +23,4 @@ clinic.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 
 
     $urlRouterProvider.otherwise("/apps");
-  }])
+  }]);

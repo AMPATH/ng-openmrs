@@ -15,8 +15,8 @@ dc.factory('DefaulterCohort', ['$resource',
     )
   }]);
 
-dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.utils', 'Auth','DefaulterCohort','EncounterService','PatientService',
-  function ($http, spinner, local, Auth,DefaulterCohort,EncounterService,PatientService) {
+dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.utils', 'DefaulterCohort','EncounterService','PatientService',
+  function ($http, spinner, local, DefaulterCohort,EncounterService,PatientService) {
     var DefaulterCohortService = {};
 
     DefaulterCohortService.ping = function () {
@@ -52,7 +52,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
           spinner.hide('waiting');
         }
         else if (uuid !== undefined && uuid !== "") {
-          console.log("Getting defaulter cohort from server...")
+          console.log("Getting defaulter cohort from server...");
           DefaulterCohort.get({defaulter_cohort_uuid: uuid}, function (result) {
             //If the previous cohort was voided, remove from locally saved cohorts
             local.set('defaulter-cohort', uuid, result.defaulter_cohort, true);
@@ -88,7 +88,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
           else console.log("patient not found");
         });
       }
-    }
+    };
 
     DefaulterCohortService.getDefaulterCohorts = function (callback) {
       local.getAll("defaulter-cohorts",false,function(dcs) {
@@ -137,8 +137,7 @@ dc.factory('DefaulterCohortService', ['$http', 'spinnerService', 'localStorage.u
                   }
                 }
               }
-              local.setItem('defaulter-cohort', uuid, cohort, Auth.getPassword());
-              callback(numUpdated);
+              local.set('defaulter-cohort', uuid, cohort, true,callback);
             });
           }
         });

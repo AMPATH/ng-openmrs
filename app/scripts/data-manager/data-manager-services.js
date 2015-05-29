@@ -1,13 +1,13 @@
 'use strict';
 
-var dataManager = angular.module('data-manager', ['localStorageServices','network-manager']);
+var dataManager = angular.module('data-manager');
 
 dataManager.factory('DataManagerService', ['$resource','$injector','localStorage.utils','NetworkManagerService',
   function($resource,$injector,localStorageService,NetworkManagerService) {
     var dataManagerService = {};
     var offlineDataServices = [];
 
-    dataManagerService.getAmountStored = function() {return localStorageService.getAmountStored();}
+    dataManagerService.getAmountStored = function() {return localStorageService.getAmountStored();};
 
     dataManagerService.ExtendedResource = function ($resource, storeOffline, tableName, usesEncryption, primaryKey, offlineQueryFields) {
       var that = this;
@@ -47,7 +47,7 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
             callback(error);
           }
         );
-      }
+      };
 
       this.get = function(params,callback) {
         if(!that.storeOffline || Object.keys(params).length > 1 || !(that.primaryKey in params)) {
@@ -62,7 +62,7 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
               else that.getServer(params, callback);
             });
         }
-      }
+      };
 
       this.queryServer = function (params, storeOffline, callback) {
         this.$resource.query(params
@@ -83,7 +83,7 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
         var searchString;
         if("q" in params) searchString = params["q"];
         local.query(that.tableName, that.offlineQueryFields, searchString, that.usesEncryption, callback);
-      }
+      };
 
 
       this.query = function (params, storeOffline, callback) {
@@ -96,7 +96,7 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
 
       this.removeLocal = function (key, callback) {
         local.remove(this.tableName, key, callback);
-      }
+      };
 
       this.removeServer = function(params,callback) {
         this.$resource.delete(params
@@ -108,13 +108,13 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
       this.remove = function(params,callback) {
         if(this.storeOffline) this.removeLocal(params[that.primaryKey],callback);
         this.removeServer(params,callback);
-      }
+      };
 
 
 
       this.saveLocal = function (key,item,callback) {
         local.set(that.tableName, key, item, that.usesEncryption,callback);
-      }
+      };
 
       this.save = function(params,callback) {
         that.$resource.save(
@@ -123,12 +123,12 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
           ,function(error) {callback({error:error});})
       }
 
-    }
+    };
 
 
     dataManagerService.addOfflineDataService = function(serviceNames) {
       offlineDataServices = offlineDataServices.concat(serviceNames);
-    }
+    };
 
     dataManagerService.changeUser = function(prevUsername,curUsername) {
       var service;
@@ -137,8 +137,12 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
         service = $injector.get(offlineDataServices[i]);
         service.changeUser(prevUsername, curUsername);
       }
-    }
+    };
 
+
+    dataManagerService.setPassword = function(password) {
+      local.setPassword(password);
+    };
 
     return dataManagerService;
 

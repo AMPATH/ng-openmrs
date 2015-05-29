@@ -1,6 +1,6 @@
 'use strict';
 
-var formEntry = angular.module('openmrs-formentry', ['localStorageServices', 'spinner']);
+var formEntry = angular.module('openmrs-formentry', ['local-storage-services', 'spinner']);
 
 formEntry
   .config(['$stateProvider',
@@ -18,7 +18,7 @@ formEntry
         .state('encounter-forms-saved', {
           url: "/encounter-forms-saved",
           templateUrl: 'views/formentry/encounter-forms-saved.html',
-          authenticate: true,
+          authenticate: true
         });
 
     }

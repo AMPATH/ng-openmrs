@@ -26,7 +26,7 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
 
       local.set('openmrs.formentry.saved-user-data', username, savedUserData);
       local.reset([pendingSubmissionTable,draftsTable]);
-    }
+    };
 
     FormEntryService.loadUserData = function(username) {
       local.get('openmrs.formentry.saved-user-data',username,false,
@@ -40,12 +40,12 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
             local.remove('openmrs.formentry.saved-user-data', username);
           }
         });
-    }
+    };
 
     FormEntryService.changeUser = function (prevUser,curUser) {
       FormEntryService.saveUserData(prevUser);
       FormEntryService.loadUserData(curUser);
-    }
+    };
 
 
     function getHashCode(s) {
@@ -65,7 +65,7 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
         name: 'Outreach Follow-up Form',
         template: 'views/formentry/forms/outreach-form2.html',
         encounterType: "df5547bc-1350-11df-a1f1-0026b9348838"
-      },
+      }
     };
 
     FormEntryService.getTemplate = function (formUuid) {
@@ -88,19 +88,19 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
           FormEntryService.getPendingSubmission(savedFormId,function(data) {callback(data);});
         }
       });
-    }
+    };
 
 
     //If savedFormId provided, return individual form. Otherwrise return all forms.
     FormEntryService.getDrafts = function (savedFormId,callback) {
-      if (savedFormId) local.get(draftsTable, savedFormId, true,callback)
+      if (savedFormId) local.get(draftsTable, savedFormId, true,callback);
       else local.query(draftsTable,null,null,true,callback);
     };
 
 
     FormEntryService.removeFromDrafts = function (savedFormId) {
       local.remove(draftsTable, savedFormId);
-    }
+    };
 
 
     FormEntryService.saveToDrafts = function (form) {
@@ -112,19 +112,19 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
         FormEntryService.removeFromPendingSubmission(form.savedFormId);
       }
 
-      local.set(draftsTable, form.savedFormId, form, Auth.getPassword());
-    }
+      local.set(draftsTable, form.savedFormId, form, true,null);
+    };
 
 
     FormEntryService.getPendingSubmission = function (savedFormId, callback) {
-      if (savedFormId) local.get(pendingSubmissionTable, savedFormId, true,callback)
+      if (savedFormId) local.get(pendingSubmissionTable, savedFormId, true,callback);
       else local.query(pendingSubmissionTable,null,null,true,callback);
-    }
+    };
 
 
     FormEntryService.removeFromPendingSubmission = function (savedFormId) {
       local.remove(pendingSubmissionTable, savedFormId);
-    }
+    };
 
 
     function toRESTStyleObs(obs, obsToLoad) {
@@ -160,7 +160,7 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
         form: {uuid:form.encounter.form}
         };
       var restObs = [];
-      toRESTStyleObs(form.obs,restObs)
+      toRESTStyleObs(form.obs,restObs);
       encounter.obs = restObs;
       return encounter;
     }
@@ -175,7 +175,7 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
       form.encounter = toRestStyleEncounter(form);
 
       local.set(pendingSubmissionTable, form.savedFormId, form, true);
-    }
+    };
 
 
     FormEntryService.submit = function (form) {
@@ -227,7 +227,7 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
         var form = forms[i];
         FormEntryService.submit(form);
       }
-    }
+    };
 
 
     function getRestObs(obs, newRestObs, obsToUpdate) {
@@ -344,7 +344,7 @@ formEntry.factory('FormEntryService', ['localStorage.utils', 'EncounterService',
         obs: restObs,
         obsToUpdate: obsToUpdate
         //breaksubmit: true
-      }
+      };
       return data;
     }
 

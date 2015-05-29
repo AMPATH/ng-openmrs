@@ -1,6 +1,4 @@
-/**
- * Created by Jonathan on 4/27/2015.
- */
+'use strict';
 
 var cd = angular.module('clinic-dashboard');
 

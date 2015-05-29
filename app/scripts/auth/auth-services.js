@@ -5,8 +5,7 @@
 var auth = angular.module('openmrs-auth');
 
 auth.factory('Auth',
-  ['$injector',
-    '$rootScope',
+  [
     'Base64',
     '$http',
     '$location',
@@ -15,7 +14,7 @@ auth.factory('Auth',
     'NetworkManagerService',
     'localStorage.utils',
     'DataManagerService',
-    function ($injector, $rootScope, Base64, $http, $location, OpenmrsSessionService, OpenmrsUserService, NetworkManagerService,local,dataMgr) {
+    function (Base64, $http, $location, OpenmrsSessionService, OpenmrsUserService, NetworkManagerService,local,dataMgr) {
       var Auth = {};
 
       Auth.authenticated = null;
@@ -29,11 +28,11 @@ auth.factory('Auth',
 
       Auth.setUsername = function (username) {
         Auth.username = username;
-      }
+      };
 
       Auth.getUsername = function () {
         return Auth.username;
-      }
+      };
 
       Auth.setPassword = function (password) {
         this.curPassword = password;
@@ -174,7 +173,7 @@ auth.factory('Auth',
         else {
           Auth.authenticateLocal(username, password, callback);
         }
-      }
+      };
 
       Auth.authenticateLocal = function (username, password, callback) {
 
@@ -212,7 +211,7 @@ auth.factory('Auth',
                 }
               });
           });
-      }
+      };
 
 
       Auth.authenticateOpenmrsContext = function (callback) {
@@ -227,7 +226,7 @@ auth.factory('Auth',
             else callback(false);
           }
         })
-      }
+      };
 
 
       Auth.logout = function () {
@@ -324,4 +323,3 @@ auth.factory('Base64', function () {
     }
   };
 });
-;

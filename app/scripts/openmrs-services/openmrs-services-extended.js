@@ -1,66 +1,9 @@
 'use strict';
 
 
-var openmrsSettings = angular.module('openmrs-settings',['localStorageServices','data-manager']);
+var mod = angular.module('openmrs-services-extended', ['ngResource', 'ngCookies','openmrs-settings','data-manager']);
 
-openmrsSettings
-  .run(['OpenmrsSettings','DataManagerService',
-    function(OpenmrsSettings,dataMgr) {
-      OpenmrsSettings.init();
-      dataMgr.addOfflineDataService('OpenmrsSettings');
-    }
-  ]);
-
-openmrsSettings.factory('OpenmrsSettings', ['$injector','localStorage.utils',
-  function ($injector,local,FormEntryService) {
-    var settings = {};
-
-    settings.context = "https://amrs.ampath.or.ke:8443/amrs";
-    settings.contextOptions =
-      [
-        "https://amrs.ampath.or.ke:8443/amrs",
-        "http://etl1.ampath.or.ke:8080/amrs"
-      ];
-
-    settings.getContextOptions = function() {
-      return settings.contextOptions;
-    }
-
-    settings.addContext = function(url) {
-      settings.contextOptions.push(url);
-    }
-
-    settings.setContext = function(url) {
-      settings.context = url;
-      //console.log(url);
-      var Auth = $injector.get("Auth");
-      Auth.authenticateOpenmrsContext(function(authenticated) {
-        //console.log('authenticated: ' + authenticated);
-      })
-      if(settings.contextOptions.indexOf(url) === -1) settings.addContext(url);
-    }
-
-    settings.getContext = function() {
-      return settings.context;
-    }
-
-    settings.init = function () {
-      var tables = ['openmrs.patient', 'expiration', 'openmrs.provider', 'openmrs.location', 'openmrs.encounter','openmrs.users','openmrs.settings'];
-      local.init(tables);
-    }
-
-    settings.changeUser = function() {
-      console.log('openmrs: changing user');
-      local.reset(['openmrs.patient','openmrs.encounter']);
-    }
-
-    return settings;
-  }]);
-
-
-var openmrsServices = angular.module('openmrs-services-extended', ['ngResource', 'ngCookies','openmrs-settings','data-manager']);
-
-openmrsServices.factory('OpenmrsUtilityService', [
+mod.factory('OpenmrsUtilityService', [
   function () {
     var util = {};
 
@@ -96,7 +39,7 @@ openmrsServices.factory('OpenmrsUtilityService', [
   }]);
 
 
-openmrsServices.factory('OpenmrsSessionService', ['$resource','OpenmrsSettings','DataManagerService',
+mod.factory('OpenmrsSessionService', ['$resource','OpenmrsSettings','DataManagerService',
   function ($resource,OpenmrsSettings,dataMgr) {
     var service = {};
     var OpenmrsSession;
@@ -125,12 +68,12 @@ openmrsServices.factory('OpenmrsSessionService', ['$resource','OpenmrsSettings',
       OpenmrsSession = $resource(url);
       return OpenmrsSession.delete({}, function (data, status, headers) {
       });
-    }
+    };
     return service;
   }]);
 
 
-openmrsServices.factory('PersonService', ['$resource','OpenmrsSettings','DataManagerService',
+mod.factory('PersonService', ['$resource','OpenmrsSettings','DataManagerService',
   function ($resource,OpenmrsSettings,dataMgr) {
     var service = {};
     var url, r, Person;
@@ -161,7 +104,7 @@ openmrsServices.factory('PersonService', ['$resource','OpenmrsSettings','DataMan
   }]);
 
 
-openmrsServices.factory('ProviderService', ['OpenmrsSettings','DataManagerService',
+mod.factory('ProviderService', ['OpenmrsSettings','DataManagerService',
   function (OpenmrsSettings,dataMgr) {
     var ProviderService = {};
     var Provider,r;
@@ -211,7 +154,7 @@ Patient.prototype.getName = function () {
   return (this.patientData.person.preferredName.givenName || "") + " "
     + (this.patientData.person.preferredName.middleName || "") + " "
     + this.patientData.person.preferredName.familyName;
-}
+};
 Patient.prototype.getGivenName = function () {
   return this.patientData.person.preferredName.givenName;
 };
@@ -256,7 +199,7 @@ Patient.prototype.getPhoneNumber = function () {
       return attr.value;
     }
   }
-}
+};
 
 Patient.prototype.getClinicalHome = function () {
   for (var i in this.patientData.person.attributes) {
@@ -266,12 +209,12 @@ Patient.prototype.getClinicalHome = function () {
     }
   }
   return "";
-}
+};
 
 
 Patient.prototype.getAttributes = function () {
   return this.patientData.person.attributes;
-}
+};
 
 //Converts an object in form of {typeUuuid:value} into rest format
 Patient.prototype.setAttributes = function (newAttributes) {
@@ -294,9 +237,9 @@ Patient.prototype.setAttributes = function (newAttributes) {
       existingAttrs.push(restAttr);
     }
   }
-}
+};
 
-openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings','DataManagerService',
+mod.factory('PatientService', ['$resource','$http', 'OpenmrsSettings','DataManagerService',
   function ($resource,$http, OpenmrsSettings,dataMgr) {
     var PatientService = {};
     var PatientRes;
@@ -322,7 +265,7 @@ openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings
 
     PatientService.Patient = function (patientData) {
       return new Patient(patientData);
-    }
+    };
 
 
     PatientService.get = function (params, callback) {
@@ -342,24 +285,24 @@ openmrsServices.factory('PatientService', ['$resource','$http', 'OpenmrsSettings
         if(data) {data = new Patient(data);}
         callback(data);
       });
-    }
+    };
 
     PatientService.query = function(params,callback) {
       PatientRes = getResource();
       PatientRes.query(params,false, function(data) {callback(data);});
-    }
+    };
 
     PatientService.saveLocal = function(key,item,callback) {
       PatientRes = getResource();
       PatientRes.saveLocal(key,item,callback);
-    }
+    };
 
     return PatientService;
 
   }]);
 
 
-openmrsServices.factory('FormService', ['$resource','OpenmrsSettings','DataManagerService',
+mod.factory('FormService', ['$resource','OpenmrsSettings','DataManagerService',
   function ($resource,OpenmrsSettings,dataMgr) {
 
     var service = {};
@@ -390,7 +333,7 @@ openmrsServices.factory('FormService', ['$resource','OpenmrsSettings','DataManag
     }
   }]);
 
-openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings','DataManagerService',
+mod.factory('ObsService', ['$resource', '$http','OpenmrsSettings','DataManagerService',
   function ($resource, $http,OpenmrsSettings,dataMgr) {
     var ObsService = {};
     var url, v, Obs;
@@ -458,20 +401,20 @@ openmrsServices.factory('ObsService', ['$resource', '$http','OpenmrsSettings','D
     ObsService.remove = function (obsUuid, callback) {
       Obs = getResource();
       Obs.remove({uuid:obsUuid},function (data) { callback(data); });
-    }
+    };
 
     ObsService.voidObs = function (obsToVoid, callback) {
       for (var i in obsToVoid) {
         var uuid = obsToVoid[i];
         ObsService.remove({uuid:uuid}, callback);
       }
-    }
+    };
 
     return ObsService;
   }]);
 
 
-openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettings','DataManagerService','PatientService',
+mod.factory('EncounterService', ['$http', '$resource','OpenmrsSettings','DataManagerService','PatientService',
   function ($http, $resource,OpenmrsSettings,dataMgr,PatientService) {
     var EncounterService = {}, Encounter;
     var r, resourceName = "openmrs.encounter";
@@ -503,12 +446,12 @@ openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettin
     EncounterService.getServer = function(params,callback) {
       Encounter = getResource();
       Encounter.getServer(params,callback);
-    }
+    };
 
     EncounterService.removeLocal = function(encounterUuid) {
       Encounter = getResource();
       Encounter.removeLocal(encounterUuid);
-    }
+    };
 
     EncounterService.patientQuery = function (params, callback) {
       var v = "custom:(uuid,encounterDatetime,patient:(uuid,uuid),form:(uuid,name),location:ref";
@@ -575,7 +518,7 @@ openmrsServices.factory('EncounterService', ['$http', '$resource','OpenmrsSettin
   }]);
 
 
-openmrsServices.factory('EncounterType', ['$resource','OpenmrsSettings',
+mod.factory('EncounterType', ['$resource','OpenmrsSettings',
   function ($resource,OpenmrsSettings) {
     return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/encountertype/:uuid",
       {uuid: '@uuid'},
@@ -585,7 +528,7 @@ openmrsServices.factory('EncounterType', ['$resource','OpenmrsSettings',
 
 
 
-openmrsServices.factory('LocationService', ['$resource', 'OpenmrsSettings','DataManagerService',
+mod.factory('LocationService', ['$resource', 'OpenmrsSettings','DataManagerService',
   function ($resource,OpenmrsSettings,dataMgr) {
     var LocationService = {},Location;
     var r, resourceName = "openmrs.location";
@@ -620,7 +563,7 @@ openmrsServices.factory('LocationService', ['$resource', 'OpenmrsSettings','Data
   }]);
 
 
-openmrsServices.factory('Concept', ['$resource','OpenmrsSettings',
+mod.factory('Concept', ['$resource','OpenmrsSettings',
   function ($resource,OpenmrsSettings) {
     return $resource(OpenmrsSettings.getContext() + "/ws/rest/v1/concept/:uuid",
       {uuid: '@uuid'},
@@ -630,7 +573,7 @@ openmrsServices.factory('Concept', ['$resource','OpenmrsSettings',
 
 
 
-openmrsServices.factory('PersonAttributeService', ['$resource','OpenmrsSettings','DataManagerService','$http',
+mod.factory('PersonAttributeService', ['$resource','OpenmrsSettings','DataManagerService','$http',
   function ($resource, OpenmrsSettings,dataMgr,$http) {
     var paService = {}, PersonAttribute;
     var r;
@@ -669,7 +612,7 @@ openmrsServices.factory('PersonAttributeService', ['$resource','OpenmrsSettings'
 
 
 
-openmrsServices.factory('OpenmrsUserService', ['$resource','OpenmrsSettings',
+mod.factory('OpenmrsUserService', ['$resource','OpenmrsSettings',
   function ($resource,OpenmrsSettings) {
     var OpenmrsUserService = {},OpenmrsUser;
     var r, resourceName = "openmrs.user";
@@ -696,7 +639,7 @@ openmrsServices.factory('OpenmrsUserService', ['$resource','OpenmrsSettings',
       OpenmrsUser.get({username: username},
         function (data) { callback(data.results[0].roles); }
       );
-    }
+    };
 
     //role can be either role uuid or name
     OpenmrsUserService.hasRole = function (username, role, callback) {
@@ -716,7 +659,7 @@ openmrsServices.factory('OpenmrsUserService', ['$resource','OpenmrsSettings',
           callback(hasRole);
         }
       );
-    }
+    };
 
     return OpenmrsUserService;
   }]);

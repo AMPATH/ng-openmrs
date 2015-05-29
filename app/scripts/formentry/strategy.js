@@ -1,7 +1,6 @@
 /*
 1. Should be binding form data to a relevant model. E.g. encounter fields should map to encounter.fieldName
-2. Each model must have a function which converts the model to the format required by the REST resource. If the bound model is identical, no function is necessary
-*/
+2. Each model must have a function which converts the model to the format required by the REST resource. If the bound model is identical, no function is necessa
 
 
 var toRestDataFunctions = {
@@ -26,14 +25,14 @@ var schemas = {encounter: ["encounterDatetime",
 
 getRestObject("encounter",formData);
 
-function getRestObject(restElement,formData) {    
-    var restObject = {};    
+function getRestObject(restElement,formData) {
+    var restObject = {};
     var restSchema = schemas[restElement];
 
     for(var key in restSchema) {
-	var data = formData[restElement.key];	
+	var data = formData[restElement.key];
 	if(key in toRestDataFunctions) {
-	    data = toRestDataFunctions[key](data);            
+	    data = toRestDataFunctions[key](data);
 	}
 	restObject.key = data;
     }
@@ -68,3 +67,4 @@ function getRestObs(obs,restObs) {
 
 
 
+*/

@@ -4,6 +4,6 @@
 'use strict';
 
 
-var etl = angular.module('etl', ['ngResource', 'localStorageServices']);
+var etl = angular.module('etl', ['ngResource', 'local-storage-services']);
 
 
