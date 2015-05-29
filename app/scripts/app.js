@@ -3,9 +3,9 @@
 /* App Module */
 var ngOpenmrsApp = angular.module('ngOpenmrsApp',
   [
+    'openmrs-auth',
     'ui.router',
     'local-storage-services',
-    'openmrs-auth',
     'data-manager',
     'ui.bootstrap',
     'etl',
@@ -23,8 +23,8 @@ var ngOpenmrsApp = angular.module('ngOpenmrsApp',
     'infinite-scroll'
   ]);
 
-ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
-  function ($stateProvider, $urlRouterProvider, $httpProvider) {
+ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider',
+  function ($stateProvider, $urlRouterProvider) {
 
     $stateProvider
       .state('login', {
@@ -43,8 +43,8 @@ ngOpenmrsApp.config(['$stateProvider', '$urlRouterProvider', '$httpProvider',
 
     $urlRouterProvider.otherwise('/apps');
   }])
-  .run(['$rootScope', '$state', 'Auth','$http',
-    function ($rootScope, $state, Auth,$http) {
+  .run(['$rootScope', '$state','Auth',
+    function ($rootScope, $state,Auth) {
       $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
         if (toState.authenticate && !Auth.isAuthenticated()) {
           $state.transitionTo('login');
