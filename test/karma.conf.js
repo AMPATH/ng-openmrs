@@ -34,7 +34,66 @@ module.exports = function(config) {
       'bower_components/angu-fixed-header-table/angu-fixed-header-table.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
-      'app/scripts/**/*.js',
+
+      'app/scripts/app.js',
+
+      'app/scripts/auth/auth.js',
+      'app/scripts/auth/auth-services.js',
+      'app/scripts/auth/auth-controllers.js',
+
+      'app/scripts/cryptojs/cryptojs.js',
+
+      'app/scripts/network-manager/network-manager.js',
+      'app/scripts/network-manager/network-manager-services.js',
+
+      'app/scripts/offline-services/local-storage-services.js',
+
+      'app/scripts/data-manager/data-manager.js',
+      'app/scripts/data-manager/data-manager-services.js',
+
+      'app/scripts/auth/auth.js',
+      'app/scripts/auth/auth-services.js',
+      'app/scripts/auth/auth-controllers.js',
+
+      'app/scripts/etl/etl.js',
+      'app/scripts/etl/etl-services.js',
+
+      'app/scripts/defaulter-cohort/defaulter-cohort.js',
+      'app/scripts/defaulter-cohort/defaulter-cohort-services.js',
+      'app/scripts/defaulter-cohort/defaulter-cohort-controllers.js',
+
+      'app/scripts/formentry/formentry.js',
+      'app/scripts/formentry/formentry-services.js',
+      'app/scripts/formentry/formentry-controllers.js',
+      'app/scripts/formentry/formentry-directives.js',
+
+      'app/scripts/openmrs-services/openmrs-settings.js',
+      'app/scripts/openmrs-services/openmrs-services-extended.js',
+
+      'app/scripts/patient-encounter/patient-encounter.js',
+      'app/scripts/patient-encounter/patient-encounter-controllers.js',
+
+      'app/scripts/patient-dashboard/patient-dashboard.js',
+      'app/scripts/patient-dashboard/patient-dashboard-directives.js',
+      'app/scripts/patient-dashboard/patient-dashboard-controllers.js',
+
+      'app/scripts/clinic-dashboard/clinic-dashboard.js',
+      'app/scripts/clinic-dashboard/clinic-dashboard-controllers.js',
+      'app/scripts/clinic-dashboard/clinic-dashboard-directives.js',
+
+      'app/scripts/patient-search/patient-search.js',
+      'app/scripts/patient-search/patient-search-controllers.js',
+      'app/scripts/utility/utility-directives.js',
+
+      'app/scripts/spinner/spinner.js',
+      'app/scripts/spinner/spinner-directives.js',
+
+      'app/scripts/layout/layout.js',
+      'app/scripts/layout/layout-controllers.js',
+
+      'app/scripts/ui.bootstrap/ui-bootstrap.js',
+      'app/scripts/ui.bootstrap/ui-bootstrap-tpls.js',
+
       'test/mock/**/*.js',
       'test/spec/**/*.js'
     ],
