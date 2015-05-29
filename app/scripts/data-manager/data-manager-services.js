@@ -9,13 +9,13 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
 
     dataManagerService.getAmountStored = function() {return localStorageService.getAmountStored();}
 
-    dataManagerService.ExtendedResource = function ($resource, storeOffline, tableName, usesEncryption, primaryKey, queryFields) {
+    dataManagerService.ExtendedResource = function ($resource, storeOffline, tableName, usesEncryption, primaryKey, offlineQueryFields) {
       var that = this;
       this.$resource = $resource;
       this.storeOffline = storeOffline;
       this.usesEncryption = usesEncryption;
       this.primaryKey = primaryKey;
-      this.queryFields = queryFields;
+      this.offlineQueryFields = offlineQueryFields;
       this.tableName = tableName;
       this.keyGetter = function (item) {
         return item[that.primaryKey];
@@ -82,7 +82,7 @@ dataManager.factory('DataManagerService', ['$resource','$injector','localStorage
       this.queryLocal = function (params, callback) {
         var searchString;
         if("q" in params) searchString = params["q"];
-        local.query(that.tableName, that.queryFields, searchString, that.usesEncryption, callback);
+        local.query(that.tableName, that.offlineQueryFields, searchString, that.usesEncryption, callback);
       }
 
 
